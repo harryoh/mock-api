@@ -5,7 +5,7 @@ services:
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
     ports:
-      - 8080:80
+      - 80:80
     depends_on:
       - auth-api
       - auth-ui
