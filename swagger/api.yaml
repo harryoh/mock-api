@@ -51,7 +51,7 @@ paths:
                       type: object
                       properties:
                         currency:
-                          $ref: '#/components/CurrencyCode'
+                          $ref: '#/components/schemas/CurrencyCode'
                         isUsed:
                           type: boolean
                           example: true
@@ -127,9 +127,18 @@ paths:
                   androidVersion:
                     $ref: '#/components/schemas/MobileVersion'
                   iosVersion:
-                    $ref: '#/components/schemasMobileVersion'
+                    $ref: '#/components/schemas/MobileVersion'
 
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: liberty.sid       # cookie name
+    bearerAuth:          # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
   schemas:
     MobileVersion:
       type: object
