@@ -1,0 +1,11 @@
+http://*
+
+route /auth/* {
+	uri strip_prefix /auth
+	reverse_proxy auth-ui:8080
+}
+
+route /api/v1/auth/* {
+	uri strip_prefix /api/v1/auth
+	reverse_proxy auth-api:4010
+}
