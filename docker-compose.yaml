@@ -7,18 +7,18 @@ services:
     ports:
       - 80:80
     depends_on:
-      - auth-api
-      - auth-ui
-  auth-api:
+      - mock-server
+      - swagger-ui
+  mock-server:
     image: stoplight/prism:4
     volumes:
       - ${SWAGGER_DIR:-./swagger}:/tmp/swagger
     command: >
       mock -p 4010 --host 0.0.0.0
-      /tmp/swagger/auth_api.yaml
-  auth-ui:
+      /tmp/swagger/api.yaml
+  swagger-ui:
     image: swaggerapi/swagger-ui
     volumes:
       - ${SWAGGER_DIR:-./swagger}:/usr/share/nginx/html/swagger
     environment:
-      API_URL: swagger/auth_api.yaml
+      API_URL: swagger/api.yaml

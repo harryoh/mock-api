@@ -24,6 +24,12 @@ function start() {
     return
   fi
 
+  if [ ! -d "$SWAGGER_DIR" ]; then
+    echo -e "${SWAGGER_DIR} directory is not found.\nCreating ${SWAGGER_DIR}...\n"
+    mkdir -p $SWAGGER_DIR
+    cp ./swagger/*.yaml $SWAGGER_DIR
+  fi
+
   docker-compose up -d
 }
 
