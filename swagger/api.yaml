@@ -4,17 +4,6 @@ info:
   title: Liberty API
 servers:
   - url: /api/v1
-components:
-  securitySchemes:
-    cookieAuth:
-      type: apiKey
-      in: cookie
-      name: liberty.sid  # cookie name
-    bearerAuth:            # arbitrary name for the security scheme
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
-
 paths:
 
 # Config
@@ -25,8 +14,6 @@ paths:
       summary: 서비스 설정값
       description: 클라이언트에서 필요한 서비스 설정값을 가져온다
       operationId: getConfigsApp
-      produces:
-        - "application/json"
       responses:
         '200':
           description: Service Config
@@ -64,7 +51,7 @@ paths:
                       type: object
                       properties:
                         currency:
-                          $ref: "#/definitions/CurrencyCode"
+                          $ref: '#/components/CurrencyCode'
                         isUsed:
                           type: boolean
                           example: true
@@ -138,36 +125,35 @@ paths:
                 type: object
                 properties:
                   androidVersion:
-                    type: object
-                    $ref: '#/definitions/MobileVersion'
+                    $ref: '#/components/schemas/MobileVersion'
                   iosVersion:
-                    type: object
-                    $ref: '#/definitions/MobileVersion'
+                    $ref: '#/components/schemasMobileVersion'
 
-definitions:
-  MobileVersion:
-    type: object
-    properties:
-      minVersionCode:
-        type: integer
-        description: 최소 동작을 위한 mobile 버전 코드
-        example: 60
-      minVersionName:
-        type: string
-        description: 최소 동작을 위한 mobile 버전명
-        example: 1.1.0
-      latestVersionCode:
-        type: integer
-        description: 최신 mobile 버전 코드
-        example: 60
-      latestVersionName:
-        type: string
-        description: 최신 mobile 버전명
-        example: 1.1.0
-  CurrencyCode:
-    type: string
-    enum: [AUD, CAD, CHF, CNH, EUR, GBP, HKD, JPY, NZD, NOK, SEK, SGD, USD]
-    description: Multi Currency 통화코드
-  CountryCode:
-    type: string
-    enum: [AUS, CAN, CHE, CHN, EUR, GBR, HKG, JPN, NZL, NOR, SWE, SGP, USA]
+components:
+  schemas:
+    MobileVersion:
+      type: object
+      properties:
+        minVersionCode:
+          type: integer
+          description: 최소 동작을 위한 mobile 버전 코드
+          example: 60
+        minVersionName:
+          type: string
+          description: 최소 동작을 위한 mobile 버전명
+          example: 1.1.0
+        latestVersionCode:
+          type: integer
+          description: 최신 mobile 버전 코드
+          example: 60
+        latestVersionName:
+          type: string
+          description: 최신 mobile 버전명
+          example: 1.1.0
+    CurrencyCode:
+      type: string
+      enum: [AUD, CAD, CHF, CNH, EUR, GBP, HKD, JPY, NZD, NOK, SEK, SGD, USD]
+      description: Multi Currency 통화코드
+    CountryCode:
+      type: string
+      enum: [AUS, CAN, CHE, CHN, EUR, GBR, HKG, JPN, NZL, NOR, SWE, SGP, USA]
