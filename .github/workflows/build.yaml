@@ -3,7 +3,7 @@ name: Validate API swagger documentation
 on: push
 
 jobs:
-  validate:
+  swagger:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -13,16 +13,32 @@ jobs:
         echo 'FILE_LIST<<EOF' >> $GITHUB_ENV
         find swagger -type f -iname "*.yaml" >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
-    - name: swagger-validator
+    - name: Validate OpenAPI files
       uses: mbowman100/swagger-validator-action@master
       with:
         files: ${{ env.FILE_LIST }}
-    - name: upload to S3
+    - name: Upload OpenAPI files to S3
       env:
-        AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID }}'
-        AWS_SECRET_ACCESS_KEY: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       run: |
         aws s3 cp \
           --recursive \
           --region ap-northeast-2 \
-          swagger s3://${{ secrets.AWS_BUCKET }}
+          swagger s3://${{ secrets.AWS_BUCKET }}/swagger
+    - name: Deploy to Mock API Server
+      uses: appleboy/ssh-action@master
+      env:
+        WORKDIR: ${{ secrets.MOCK_SERVER_WORKDIR }}
+        AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID }}'
+        AWS_SECRET_ACCESS_KEY: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
+        S3_SWAGGER_DIR: 's3://${{ secrets.AWS_BUCKET }}/swagger'
+        SWAGGER_DIR: ${{ secrets.MOCK_SWAGGER_DIR }}
+      with:
+        host: ${{ secrets.MOCK_SERVER_HOST }}
+        username: ${{ secrets.MOCK_SERVER_USERNAME }}
+        key: ${{ secrets.MOCK_SERVER_KEY }}
+        port: ${{ secrets.MOCK_SERVER_PORT }}
+        script: |
+          cd $WORKDIR
+          aws s3 sync $S3_SWAGGER_DIR $SWAGGER_DIR
