@@ -3,7 +3,7 @@ name: Validate API swagger documentation
 on: push
 
 jobs:
-  swagger:
+  deploy-swagger:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
@@ -26,9 +26,6 @@ jobs:
           --recursive \
           --region ap-northeast-2 \
           swagger s3://${{ secrets.AWS_BUCKET }}/swagger
-  deploy-swagger:
-    runs-on: ubuntu-latest
-    steps:
     - name: Deploy to Mock API Server
       uses: appleboy/ssh-action@master
       with:
