@@ -333,19 +333,13 @@ paths:
       security:
         - bearerAuth: []
 
-  # Bit verification
-  /bio/registerPublicKey:
-    put:
+  # Bio verification
+  /users/auth00-optional/bio/registerPublicKey:
+    post:
       tags:
         - "Bio verification"
-      summary: "[onboarding/member] bio 인증을 위한 public key 등록, 가입유저용"
-      description: "bio 인증을 위한 public key 등록, 가입유저용"
-      parameters:
-        - in: header
-          name: otpcode
-          description: 발급받은 otp 번호 (otpType = reRegisterPublic)
-          schema:
-            type: string
+      summary: "[onboarding/member] bio 인증을 위한 public key 등록, 신규"
+      description: "bio 인증을 위한 public key 등록, 신규"
       requestBody:
         content:
           application/json:
@@ -379,6 +373,66 @@ paths:
           description: |
             - INVALID_INPUT, 'Already Registered'
             - INVALID_INPUT, 'Different deviceId'
+      security:
+        - cookieAuth: []
+  /users/auth01-optional/bio/challenge/registerPublicForOnboarding:
+    post:
+      tags:
+        - "Bio verification"
+      summary: "[onboarding] 신규"
+      description: "모바일에서 바이오인증을 위한 메시지 중 challenge값 요청"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  challenge:
+                    type: string
+                    example: "qs2PzfZH_Q"
+                    description: 10자리 랜덤문자
+        404:
+          description: |
+            - NO_DATA, Not find waiting with userId
+            - NO_USER, User not found with {email}
+      security:
+        - cookieAuth: []
+  /users/auth02-optional/bio/verify/registerPublicForOnboarding:
+    get:
+      tags:
+        - "Bio verification"
+      summary: "[onboarding] 신규"
+      description: "바이오 인증요청"
+      parameters:
+        - in: header
+          name: signature
+          description: signature 값, url-safe base64타입
+          example: MEYCIQDIhAvWQFRqa_vV8PCfKRe9R9ia955dlL7S6UG_Zp8RtgIhANdrVql-ZjrpCxaM0saAf2gBqXRKeXIX5USinmncahLX
+          schema:
+            type: string
+        - in: header
+          name: nonce
+          description: signature에 사용된 nonce 값
+          example: 37790051
+          schema:
+            type: number
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+        404:
+          description: |
+            - NO_DATA, Not find waiting with userId
+            - NO_USER, User not found with {email}
       security:
         - cookieAuth: []
 
