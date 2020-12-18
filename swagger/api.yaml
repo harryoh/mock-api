@@ -129,13 +129,266 @@ paths:
                   iosVersion:
                     $ref: '#/components/schemas/MobileVersion'
 
+# Onboarding
+  /signUp/auth10/checkSignUp:
+    post:
+      summary: 회원 상태 확인
+      description: 전화번호를 이용해 회원가입/임시회원/비회원 여부 확인
+      tags:
+        - Onboarding
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                countryCallingCode:
+                  type: string
+                  description: 국제 전화번호 코드
+                  example: '+82'
+                phone:
+                  type: string
+                  description: 확인하려는 전화번호
+                  example: '1012341234'
+                deviceId:
+                  type: string
+                  description: 앱이 설치되어 있는 device id
+                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userStatus:
+                    $ref: '#/components/schemas/userStatus'
+                    example: NOT_MEMBER
+                  onboardingStatus?:
+                    $ref: '#/components/schemas/onboardingStatus'
+                  isDeviceNotChanged:
+                    type: boolean
+                    description: device id가 일치 하지 않을때 false. (deviceId값을 보내지 않을때는 true값만 리턴한다.)
+                    example: true
+        401:
+          description: |
+            - INVALID_INVESTOR_TYPE, 개인 회원이 아닙니다.
+  /signUp/auth20/initMember:
+    post:
+      summary: 회원등록
+      description: 회원을 등록하고 모바일 OTP를 요청한다.
+      tags:
+        - Onboarding
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                countryCallingCode:
+                  type: string
+                  description: 국제 전화번호 코드
+                  example: +82
+                phone:
+                  type: string
+                  example: '1012341234'
+                marketingAllowed:
+                  type: boolean
+                  example: true
+                deviceModel:
+                  type: string
+                  example: Mi MIX 2S
+                deviceId:
+                  type: string
+                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
+                osVersion:
+                  type: string
+                  example: 29
+                appVersion:
+                  type: string
+                  example: 3.1.5
+                adsId?:
+                  type: string
+                  example: a472b9b2-39df-49e6-aa6b-f465d9f5c6d1
+                devicePlatform?:
+                  type: string
+                  enum: [ANDROID, IOS]
+                  example: ANDROID
+      responses:
+        200:
+          description: Success
+          headers:
+            signUp-jwt:
+              schema:
+                type: string
+              description: 임시회원 토큰
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  countryCallingCode:
+                    type: string
+                    description: 국제 전화번호 코드
+                    example: +82
+                  phone:
+                    type: string
+                    example: '1012341234'
+                  userStatus:
+                    $ref: '#/components/schemas/userStatus'
+                    example: EPH_MEMBER
+        401:
+          description: ALREADY_REGISTERED 가입중 이거나 완료된 회원입니다.
+  /signUp/auth30/verifyOtp:
+    post:
+      summary: otp 확인
+      description: 요청한 otp 확인
+      tags:
+        - Onboarding
+      parameters:
+        - in: header
+          name: signUp-jwt
+          description: 임시회원 토큰
+          schema:
+            type: string
+        - in: header
+          name: otpcode
+          description: 발급받은 otp 번호 (otpType = mobile)
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceModel:
+                  type: string
+                  example: Mi MIX 2S
+                deviceId:
+                  type: string
+                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
+                osVersion:
+                  type: string
+                  example: 29
+                appVersion:
+                  type: string
+                  example: 3.1.5
+                adsId?:
+                  type: string
+                  example: a472b9b2-39df-49e6-aa6b-f465d9f5c6d1
+                devicePlatform?:
+                  type: string
+                  enum: [ANDROID, IOS]
+                  example: ANDROID
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+        400:
+          description: INVALID_CODE, The code provided does not match the expected value
+        401:
+          description: NO_USER 입력한 이메일과 일치하는 유저가 없습니다.
+      security:
+        - cookieAuth: []
+
+  /signUp/verifyJwtToken:
+    post:
+      summary: jwtToken 확인
+      description: 로그인 후 jwtToken 유효 여부 확인
+      tags:
+        - Onboarding
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userStatus:
+                    $ref: '#/components/schemas/userStatus'
+                    example: EPH_MEMBER
+                  onboardingStatus:
+                    $ref: '#/components/schemas/onboardingStatus'
+                    example: INIT_MEMBER
+                  authLevel:
+                    $ref: '#/components/schemas/AuthLevel'
+                    example: NEW
+        401:
+          description: |
+            - NO_JWT_TOKEN, No JWT token provided
+            - NO_USER_FOR_JWT, No user for the JWT token
+            - INVALID_JWT, No longer valid JWT token(Logged in another device)
+            - EXPIRED_JWT, jwt expired
+      security:
+        - bearerAuth: []
+
+  # Bit verification
+  /bio/registerPublicKey:
+    put:
+      tags:
+        - "Bio verification"
+      summary: "[onboarding/member] bio 인증을 위한 public key 등록, 가입유저용"
+      description: "bio 인증을 위한 public key 등록, 가입유저용"
+      parameters:
+        - in: header
+          name: otpcode
+          description: 발급받은 otp 번호 (otpType = reRegisterPublic)
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                publicKey:
+                  type: string
+                  description: PEM형식으로 default base64타입
+                  example: -----BEGIN PUBLIC KEY-----\nMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIZmdW4rKOJFvgVtA5BJwJtrQBD0rpWjMKZ2b6tev\nke9MTgw8Lf7xodca8mca9blFj7lOKP5qhXm4WWQ+OZ41Pw==\n-----END PUBLIC KEY-----
+                deviceId:
+                  type: string
+                  description: signIn시, 보낸 deviceId
+                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+        404:
+          description: |
+            - NO_DATA, Not find waiting with userId
+            - NO_USER, User not found with {email}
+        400:
+          description: |
+            - INVALID_INPUT, 'Already Registered'
+            - INVALID_INPUT, 'Different deviceId'
+      security:
+        - cookieAuth: []
+
 components:
   securitySchemes:
     cookieAuth:
       type: apiKey
       in: cookie
-      name: liberty.sid       # cookie name
-    bearerAuth:          # arbitrary name for the security scheme
+      name: liberty.sid
+    bearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT 
@@ -166,3 +419,23 @@ components:
     CountryCode:
       type: string
       enum: [AUS, CAN, CHE, CHN, EUR, GBR, HKG, JPN, NZL, NOR, SWE, SGP, USA]
+    onboardingStatus:
+      type: string
+      enum: [INIT_MEMBER, EMAIL_VERIFIED, PASSWORD_SET, OTP_VERIFIED,
+            SUITABILITY_DONE, PROFILE_SUBMITTED, ID_SUBMITTED, KYC_READY,
+            PENDING_KYCAML, OCR_FAILED, FACE_FAILED, EDD_REQUIRED, POA_REQUIRED,
+            POA_FAILED, UNDER18, DUPLICATE_PASSPORT, REJECTED_KYCAML,
+            WHITELISTING, RI_VERIFIED]
+      description: 회원가입 진행 상태, userStatus가 NOT_MEMBER인 경우 값이 없을 수 있다.
+                  (최초 회원가입시 이 값은 없다.)
+    userStatus:
+      type: string
+      enum: [NOT_MEMBER, EPH_MEMBER, ONBOARDING_MEMBER, BANED_MEMBER, MEMBER,
+            DELETED_MEMBER]
+      description: NOT_MEMBER - email등록 하지 않은 경우 / EPH_MEMBER - 가입시작하고 otp 완료 전
+                  / ONBOARDING_MEMBER - otp인증 후 부터 회원가입 완료시 까지
+    AuthLevel:
+      type: string
+      enum: [NEW, EMAIL, PASSWORD, OTP, SUITABILITY, PROFILE, ID_SUBMITTED,
+            PENDING_KYCAML, KYCAML, SIGN_UP, BANK_ACCOUNT, ADD_FUNDED, INVESTED]
+      description: 회원 활동 상태

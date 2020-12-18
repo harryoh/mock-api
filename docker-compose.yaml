@@ -1,6 +1,7 @@
 version: '3'
 services:
   proxy:
+    restart: always
     image: caddy
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile
@@ -10,6 +11,7 @@ services:
       - mock-server
       - swagger-ui
   mock-server:
+    restart: unless-stopped
     image: stoplight/prism:4
     volumes:
       - ${SWAGGER_DIR:-./swagger}:/tmp/swagger
@@ -17,6 +19,7 @@ services:
       mock -p 4010 --host 0.0.0.0
       /tmp/swagger/api.yaml
   swagger-ui:
+    restart: unless-stopped
     image: swaggerapi/swagger-ui
     volumes:
       - ${SWAGGER_DIR:-./swagger}:/usr/share/nginx/html/swagger
