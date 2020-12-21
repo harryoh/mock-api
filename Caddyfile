@@ -4,7 +4,7 @@ route {
   reverse_proxy swagger-ui:8080
 }
 
-route /api/v1/* {
-  uri strip_prefix /api/v1
+route /v1/* {
+  uri strip_prefix /v1
   reverse_proxy mock-server:4010
 }
