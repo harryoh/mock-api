@@ -435,7 +435,98 @@ paths:
             - NO_USER, User not found with {email}
       security:
         - cookieAuth: []
-
+  /users/auth10/suitability/questions:
+    get:
+      summary: suitability 질문
+      description: suitability 질문 목록 조회
+      tags:
+        - Suitability
+      parameters:
+        - in: query
+          name: language
+          description: 조회 하려는 언어 (ISO_639-1, en - english, ko - korean)
+          schema:
+            type: string
+            enum:
+              - en
+              - ko
+            example: en
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: "array"
+                items:
+                  $ref: "#/components/schemas/SuitabilityQuestions"
+      security:
+        - cookieAuth: []
+  /users/auth11/suitability/answer:
+    post:
+      summary: suitability 답변
+      description: suitability 답변 저장
+      tags:
+        - Suitability
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      q:
+                        type: number
+                        description: 질문 번호
+                        example: 1
+                      a:
+                        type: string
+                        description: 질문의 보기 id
+                        enum: ['A','B','C']
+                        example: A
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  investProfile:
+                    type: string
+                    enum: ['AGGRESSIVE', 'BALANCED', 'CONSERVATIVE']
+  /users/auth12/suitability/finish:
+    put:
+      summary: suitability 완료
+      description: suitability 끝날때 호출 해줘야 하는 api, 호출하면 onboardingStatus가 SUITABILITY_DONE로 변경된다.
+      tags:
+        - Suitability
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                investProfile?:
+                  type: string
+                  enum: ['AGGRESSIVE', 'BALANCED', 'CONSERVATIVE']
+                  example: BALANCED
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+      security:
+        - cookieAuth: []
 components:
   securitySchemes:
     cookieAuth:
@@ -493,3 +584,30 @@ components:
       enum: [NEW, EMAIL, PASSWORD, OTP, SUITABILITY, PROFILE, ID_SUBMITTED,
             PENDING_KYCAML, KYCAML, SIGN_UP, BANK_ACCOUNT, ADD_FUNDED, INVESTED]
       description: 회원 활동 상태
+    SuitabilityQuestions:
+      type: array
+      items:
+        type: object
+        properties:
+          number:
+            type: number
+            description: 질문 번호
+            example: 1
+          contents:
+            type: string
+            description: 질문 내용
+            example: 1 더하기 1은 2입니까?
+          items:
+            type: array
+            items:
+              type: object
+              properties:
+                itemId:
+                  type: string
+                  description: 질문의 보기 id
+                  enum: ['A','B','C']
+                  example: A
+                contents:
+                  type: string
+                  description: 질문의 보기 내용
+                  example: '0'
