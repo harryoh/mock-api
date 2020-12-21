@@ -300,7 +300,59 @@ paths:
           description: NO_USER 입력한 이메일과 일치하는 유저가 없습니다.
       security:
         - cookieAuth: []
-
+  /auth/password:
+    post:
+      summary: 비밀번호
+      description: 새로운 비밀번호를 생성한다.
+      tags:
+        - Auth
+      parameters:
+        - in: header
+          name: signUp-jwt
+          description: 임시회원 토큰
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  example: mypassword
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+      security:
+        - cookieAuth: []
+  /auth/passwordDone:
+    put:
+      summary: 패스워드 작업 종료
+      description: 서버에 저장될 PrivateKey를 암호화할 RecoveryPassword를 생성후 호출한다.(Password는 보내지 않음.)
+      tags:
+        - Auth
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+      security:
+        - cookieAuth: []
   /auth/verifyJwtToken:
     post:
       summary: jwtToken 확인
@@ -332,7 +384,272 @@ paths:
             - EXPIRED_JWT, jwt expired
       security:
         - bearerAuth: []
-
+  /auth/tryLogin:
+    post:
+      summary: Passcode를 입력
+      description: 전화번호와 password 확인, 로그인 시도 5회 초과 검사
+      tags:
+        - Auth SignIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                countryCallingCode:
+                  type: string
+                  example: +82
+                phone:
+                  type: string
+                  example: 01012341234
+                password:
+                  type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userStatus:
+                    type: string
+                    enum: [NOT_MEMBER, EPH_MEMBER, ONBOARDING_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
+        401:
+          description: |
+            - NO_USER, 없는 유저 입니다.
+            - INVALID_PASSWORD, 잘못된 비밀번호 입니다.
+            - BAN_MEMBER, 로그인 금지된 계정입니다. 관리자에게 문의 하세요.
+        403:
+          description: EXCEED_RETRY 로그인 시도 횟수 5회 초과 입니다.
+  /auth/sendOtp:
+    post:
+      tags:
+        - Auth SignIn
+      summary: 회원 토큰 없이 모바일 OTP 인증
+      description: 로그인 없이 유저핸드폰으로 인증문자 요청
+      operationId: loginWithOtp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                countryCallingCode:
+                  type: string
+                  description: 국가번호
+                  example: +82
+                phone:
+                  type: string
+                  description: 인증 받는 유저의 핸드폰번호
+                  example: 01012341234
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                properties:
+                  requestId:
+                    type: string
+                    description: otp 인증 키값
+                  remainTime:
+                    type: number
+                    description: verify 남은 시간(초)
+        400:
+          description: |
+            - "INVALID_TYPE, No OptType: {type}"
+            - SMS_REQUEST_ERROR
+            - Throttled, Throttled	You are trying to send more than the maximum of 30 requests per second.
+            - ParameterMissing, Your request is incomplete and missing the mandatory parameter $parameter	The stated parameter is missing.
+            - InvalidValue, Invalid value for parameter $parameter	Invalid value for parameter.If you see Facility not allowed in the error text, check that you are using the correct Base URL in your request.
+            - InvalidCredential, Invalid credentials were provided	The supplied API key or secret in the request is either invalid or disabled.
+            - InternalError, Internal Error	An error occurred processing this request in the Cloud Communications Platform.
+            - Unable, "The Nexmo platform was unable to process this message for the following reason - $reason	The request could not be routed."
+            - BlackList, The number you are trying to verify is blacklisted for verification.
+            - Barred, The api_key you supplied is for an account that has been barred from submitting messages.
+            - OutOfBalance, Partner quota exceeded	Your account does not have sufficient credit to process this request.
+            - Duplicated, Concurrent verifications to the same number are not allowed
+            - Rejected, The destination number is not in a supported network	The request has been rejected. Find out more about this error in the Knowledge Base
+            - NotMatched, The code inserted does not match the expected value
+            - WrongCode, The wrong code was provided too many times	You can run Verify check on a specific request_id up to three times unless a new verification code is generated. If you check a request more than three times, it is set to FAILED and you cannot check it again.
+            - TooManyRequest, Too many request_ids provided	You added more than the maximum ten request_ids to your request.
+            - NoMoreEvent, No more events are left to execute for this request
+            - NotSupport, This account does not support the parameter - pin_code.	Only certain accounts have the ability to set the pin_code. Please contact your account manager for more information.
+            - NoRequestFound, No request found	There are no matching verify requests.
+        401:
+          description: NO_USER 입력한 전화번호와 일치하는 유저가 없습니다.
+  /signIn/loginWithOtp:
+    post:
+      summary: OTP를 이용한 로그인
+      description: OTP를 이용하여 최종 로그인을 한다. (member / onboardingMember)
+      tags:
+        - Auth SignIn
+      parameters:
+        - in: header
+          name: otpcode
+          description: otp 인증 코드
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                countryCallingCode:
+                  type: string
+                  description: 국가번호
+                  example: +82
+                phone1:
+                  type: string
+                  description: 모바일 번호
+                  example: 01012341234
+                deviceModel:
+                  type: string
+                  example: Mi MIX 2S
+                deviceId:
+                  type: string
+                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
+                osVersion:
+                  type: string
+                  example: 29
+                appVersion:
+                  type: string
+                  example: 3.1.5
+                adsId?:
+                  type: string
+                  example: a472b9b2-39df-49e6-aa6b-f465d9f5c6d1
+                devicePlatform?:
+                  type: string
+                  enum: [ANDROID, IOS]
+                  example: ANDROID
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  countryCallingCode:
+                    type: string
+                    example: +82
+                  phone:
+                    type: string
+                    example: 01012341234
+                  userStatus:
+                    type: string
+                    enum: [NOT_MEMBER, TEMP_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
+                    example: MEMBER
+                  onboardingStatus:
+                    $ref: '#/components/schemas/onboardingStatus'
+                  authLevel:
+                    $ref: '#/components/schemas/AuthLevel'
+                    type: string
+                  isMigrationAgree:
+                    type: boolean
+                    description: migration 동의 여부
+                    example: false
+        401:
+          description: |
+            - NO_USER 입력한 이메일과 일치하는 유저가 없습니다.
+            - BAN_MEMBER 로그인 금지된 계정입니다. 관리자에게 문의 하세요.
+            - INVALID_MEMBER 회원가입이 완료되지 않았습니다.
+        403:
+          description: |
+            - EXCEED_RETRY 로그인 시도 횟수 5회 초과 입니다.
+            - INVALID_PASSWORD 잘못된 비밀번호 입니다.
+        500:
+          description: NO_URL_OR_METHOD 로그인 jwt fund에 반영 실패!
+  /auth/loginWithBio:
+    post:
+      summary: '바이오 인증'
+      description: 바이오 인증 통한 최종 로그인 (member / onboardingMember)
+      tags:
+        - Auth SignIn
+      parameters:
+        - in: header
+          name: nonce
+          description: 바이오sign시, 사용한 nonce
+          schema:
+            type: string
+        - in: header
+          name: signature
+          description: 바이오sign시, 나온 signature. url-safe base64
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                countryCallingCode:
+                  type: string
+                  description: 국가번호
+                  example: +82
+                phone1:
+                  type: string
+                  description: 모바일 번호
+                  example: 01012341234
+                deviceModel:
+                  type: string
+                  example: Mi MIX 2S
+                deviceId:
+                  type: string
+                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
+                osVersion:
+                  type: string
+                  example: 29
+                appVersion:
+                  type: string
+                  example: 3.1.5
+                adsId?:
+                  type: string
+                  example: a472b9b2-39df-49e6-aa6b-f465d9f5c6d1
+                devicePlatform?:
+                  type: string
+                  enum: [ANDROID, IOS]
+                  example: ANDROID
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  countryCallingCode:
+                    type: string
+                    example: +82
+                  phone:
+                    type: string
+                    example: 01012341234
+                  userStatus:
+                    type: string
+                    enum: [NOT_MEMBER, TEMP_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
+                    example: MEMBER
+                  onboardingStatus:
+                    $ref: '#/components/schemas/onboardingStatus'
+                  authLevel:
+                    $ref: '#/components/schemas/AuthLevel'
+                    type: string
+                  isMigrationAgree:
+                    type: boolean
+                    description: migration 동의 여부
+                    example: false
+        401:
+          description: |
+            - NO_USER 입력한 이메일과 일치하는 유저가 없습니다.
+            - BAN_MEMBER 로그인 금지된 계정입니다. 관리자에게 문의 하세요.
+            - INVALID_MEMBER 회원가입이 완료되지 않았습니다.
+        403:
+          description: |
+            - EXCEED_RETRY 로그인 시도 횟수 5회 초과 입니다.
+            - INVALID_PASSWORD 잘못된 비밀번호 입니다.
+        500:
+          description: NO_URL_OR_METHOD 로그인 jwt fund에 반영 실패!
   # Bio verification
   /auth/bio/registerPublicKey:
     post:
