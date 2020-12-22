@@ -5,12 +5,10 @@ info:
 servers:
   - url: /v1
 paths:
-
-# Config
-  /configs/app:
+  /sys/configs/app:
     get:
       tags:
-        - Configs
+        - System
       summary: 서비스 설정값
       description: 클라이언트에서 필요한 서비스 설정값을 가져온다
       operationId: getConfigsApp
@@ -108,8 +106,7 @@ paths:
                         residencePermit:
                           type: boolean
                           example: true
-# System
-  /versions:
+  /sys/versions:
     get:
       tags:
         - System
@@ -160,6 +157,35 @@ paths:
             - EXPIRED_JWT, jwt expired
       security:
         - bearerAuth: []
+  /auth/session/status:
+    get:
+      summary: 로그인 여부 확인
+      description: 로그인 후 session 유효 확인
+      operationId: getAuthSessionStatus
+      tags:
+        - Auth Users
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userStatus:
+                    type: string
+                    enum: [NOT_MEMBER, EPH_MEMBER, ONBOARDING_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
+                  onboardingStatus:
+                    $ref: '#/components/schemas/onboardingStatus'
+                  authLevel:
+                    $ref: '#/components/schemas/AuthLevel'
+                    type: string
+        401:
+          description: |
+            - INVALID_SESSION, session expired.
+            - INVALID_SID, No longer valid Session ID
+      security:
+        - cookieAuth: []
   /auth/member:
     post:
       summary: 회원등록
@@ -173,13 +199,9 @@ paths:
             schema:
               type: object
               properties:
-                countryCallingCode:
-                  type: string
-                  description: 국제 전화번호 코드
-                  example: +82
                 phone:
                   type: string
-                  example: '1012341234'
+                  example: +821012341234
                 marketingAllowed:
                   type: boolean
                   example: true
@@ -215,13 +237,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  countryCallingCode:
-                    type: string
-                    description: 국제 전화번호 코드
-                    example: +82
                   phone:
                     type: string
-                    example: '1012341234'
+                    example: +821012341234
                   userStatus:
                     $ref: '#/components/schemas/userStatus'
                     example: EPH_MEMBER
@@ -240,14 +258,10 @@ paths:
             schema:
               type: object
               properties:
-                countryCallingCode:
-                  type: string
-                  description: 국제 전화번호 코드
-                  example: '+82'
                 phone:
                   type: string
                   description: 확인하려는 전화번호
-                  example: '1012341234'
+                  example: '+821012341234'
                 deviceId:
                   type: string
                   description: 앱이 설치되어 있는 device id
@@ -307,11 +321,11 @@ paths:
                     example: OK
       security:
         - cookieAuth: []
-  /auth/member/passwordDone:
-    post:
+  /auth/member/encryptedPK:
+    put:
       summary: 패스워드 작업 종료
-      description: 서버에 저장될 PrivateKey를 암호화할 RecoveryPassword를 생성후 호출한다.(Password는 보내지 않음.)
-      operationId: postAuthMemberPasswordDone
+      description: 생성된 복구 패스워드를 이용하여 PrivateKey를 암호화하여 서버에 저장한다.
+      operationId: putAuthMemberEncriptedPK
       tags:
         - Auth Member
       responses:
@@ -330,7 +344,7 @@ paths:
   /auth/otp/{otpType}/send:
     post:
       tags:
-        - Auth SignIn
+        - Auth OTP
       summary: 회원 토큰 없이 모바일 OTP 인증
       description: 로그인 없이 유저핸드폰으로 인증문자 요청
       operationId: postAuthOtpTypeSend
@@ -348,14 +362,10 @@ paths:
             schema:
               type: object
               properties:
-                countryCallingCode:
-                  type: string
-                  description: 국가번호
-                  example: +82
                 phone:
                   type: string
                   description: 인증 받는 유저의 핸드폰번호
-                  example: 01012341234
+                  example: +821012341234
       responses:
         200:
           description: "successful operation"
@@ -472,12 +482,9 @@ paths:
             schema:
               type: object
               properties:
-                countryCallingCode:
-                  type: string
-                  example: +82
                 phone:
                   type: string
-                  example: 01012341234
+                  example: +821012341234
                 password:
                   type: string
       responses:
@@ -502,13 +509,13 @@ paths:
     post:
       summary: OTP를 이용한 로그인
       description: OTP를 이용하여 최종 로그인을 한다. (member / onboardingMember)
+      operationId: postAuthLoginOtp
       tags:
         - Auth Login
       parameters:
         - in: header
           name: otpcode
           description: otp 인증 코드
-          operationId: postAuthLoginOtp
           schema:
             type: string
       requestBody:
@@ -517,14 +524,10 @@ paths:
             schema:
               type: object
               properties:
-                countryCallingCode:
-                  type: string
-                  description: 국가번호
-                  example: +82
-                phone1:
+                phone:
                   type: string
                   description: 모바일 번호
-                  example: 01012341234
+                  example: +821012341234
                 deviceModel:
                   type: string
                   example: Mi MIX 2S
@@ -552,12 +555,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  countryCallingCode:
-                    type: string
-                    example: +82
                   phone:
                     type: string
-                    example: 01012341234
+                    example: +821012341234
                   userStatus:
                     type: string
                     enum: [NOT_MEMBER, TEMP_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
@@ -606,14 +606,10 @@ paths:
             schema:
               type: object
               properties:
-                countryCallingCode:
-                  type: string
-                  description: 국가번호
-                  example: +82
-                phone1:
+                phone:
                   type: string
                   description: 모바일 번호
-                  example: 01012341234
+                  example: +821012341234
                 deviceModel:
                   type: string
                   example: Mi MIX 2S
@@ -641,12 +637,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  countryCallingCode:
-                    type: string
-                    example: +82
                   phone:
                     type: string
-                    example: 01012341234
+                    example: +821012341234
                   userStatus:
                     type: string
                     enum: [NOT_MEMBER, TEMP_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
@@ -750,58 +743,28 @@ paths:
             - INVALID_INPUT, 'Different deviceId'
       security:
         - cookieAuth: []
-  # /auth/bio/challenge/registerPublicForOnboarding:
-  #   post:
-  #     tags:
-  #       - Auth Bio Verification
-  #     summary: "[onboarding] 신규"
-  #     description: 모바일에서 바이오인증을 위한 메시지 중 challenge값 요청
-  #     responses:
-  #       200:
-  #         description: successful operation
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               properties:
-  #                 challenge:
-  #                   type: string
-  #                   example: "qs2PzfZH_Q"
-  #                   description: 10자리 랜덤문자
-  #       404:
-  #         description: |
-  #           - NO_DATA, Not find waiting with userId
-  #           - NO_USER, User not found with {email}
-  #     security:
-  #       - cookieAuth: []
-  
-  /auth/session/status:
-    get:
-      summary: 로그인 여부 확인
-      description: 로그인 후 session 유효 확인
-      operationId: getAuthSessionStatus
+  /auth/bio/challenge:
+    post:
       tags:
-        - Auth Users
+        - Auth Bio Verification
+      summary: "[onboarding] 신규"
+      description: 모바일에서 바이오인증을 위한 메시지 중 challenge값 요청
       responses:
         200:
-          description: Success
+          description: successful operation
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  userStatus:
+                  challenge:
                     type: string
-                    enum: [NOT_MEMBER, EPH_MEMBER, ONBOARDING_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
-                  onboardingStatus:
-                    $ref: '#/components/schemas/onboardingStatus'
-                  authLevel:
-                    $ref: '#/components/schemas/AuthLevel'
-                    type: string
-        401:
+                    example: "qs2PzfZH_Q"
+                    description: 10자리 랜덤문자
+        404:
           description: |
-            - INVALID_SESSION, session expired.
-            - INVALID_SID, No longer valid Session ID
+            - NO_DATA, Not find waiting with userId
+            - NO_USER, User not found with {email}
       security:
         - cookieAuth: []
 
@@ -871,34 +834,34 @@ paths:
                   investProfile:
                     type: string
                     enum: ['AGGRESSIVE', 'BALANCED', 'CONSERVATIVE']
-  # /auth/suitability/finish:
-  #   put:
-  #     summary: suitability 완료
-  #     description: suitability 끝날때 호출 해줘야 하는 api, 호출하면 onboardingStatus가 SUITABILITY_DONE로 변경된다.
-  #     tags:
-  #       - Auth Suitability
-  #     requestBody:
-  #       content:
-  #         application/json:
-  #           schema:
-  #             properties:
-  #               investProfile?:
-  #                 type: string
-  #                 enum: ['AGGRESSIVE', 'BALANCED', 'CONSERVATIVE']
-  #                 example: BALANCED
-  #     responses:
-  #       200:
-  #         description: Success
-  #         content:
-  #           application/json:
-  #             schema:
-  #               type: object
-  #               properties:
-  #                 result:
-  #                   type: string
-  #                   example: OK
-  #     security:
-  #       - cookieAuth: []
+  /auth/suitability/finish:
+    put:
+      summary: suitability 완료
+      description: suitability 끝날때 호출 해줘야 하는 api, 호출하면 onboardingStatus가 SUITABILITY_DONE로 변경된다.
+      tags:
+        - Auth Suitability
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                investProfile?:
+                  type: string
+                  enum: ['AGGRESSIVE', 'BALANCED', 'CONSERVATIVE']
+                  example: BALANCED
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+      security:
+        - cookieAuth: []
 components:
   securitySchemes:
     cookieAuth:
