@@ -126,12 +126,18 @@ paths:
                   iosVersion:
                     $ref: '#/components/schemas/MobileVersion'
   /auth/token/status:
-    post:
+    get:
       summary: jwtToken 확인
       description: 로그인 후 jwtToken 유효 여부 확인
-      operationId: postAuthTokenStatus
+      operationId: getAuthTokenStatus
       tags:
         - Auth
+      parameters:
+        - in: header
+          name: signUp-jwt
+          description: 임시회원 토큰
+          schema:
+            type: string
       responses:
         200:
           description: Success
@@ -186,22 +192,77 @@ paths:
             - INVALID_SID, No longer valid Session ID
       security:
         - cookieAuth: []
-  /auth/member:
+  /auth/member/status:
+    get:
+      summary: 회원 상태 확인
+      description: 전화번호를 이용해 회원가입/임시회원/비회원 여부 확인
+      operationId: getAuthMemberStatus
+      tags:
+        - Auth Member
+      parameters:
+        - in: query
+          name: countryCallingCode
+          description: 국가번호
+          schema:
+            type: string
+            example: +82
+        - in: query
+          name: phone
+          description: 확인하려는 모바일 번호
+          schema:
+            type: string
+            example: '01012341234'
+        - in: query
+          name: deviceId
+          description: 앱이 설치되어 있는 device id
+          schema:
+            type: string
+            example: 11a3eef5-a726-4ecd-a618-993131e67ae9
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userStatus:
+                    $ref: '#/components/schemas/userStatus'
+                    example: NOT_MEMBER
+                  onboardingStatus?:
+                    $ref: '#/components/schemas/onboardingStatus'
+                  isDeviceNotChanged:
+                    type: boolean
+                    description: device id가 일치 하지 않을때 false. (deviceId값을 보내지 않을때는 true값만 리턴한다.)
+                    example: true
+        401:
+          description: |
+            - INVALID_INVESTOR_TYPE, 개인 회원이 아닙니다.
+  /auth/signup00/member:
     post:
       summary: 회원등록
       description: 회원을 등록하고 모바일 OTP를 요청한다.
-      operationId: postAuthMember
+      operationId: postAuthSignupMember
       tags:
-        - Auth Member
+        - Auth Signup
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
+                countryCallingCode:
+                  type: string
+                  description: 국제 전화번호 코드
+                  example: +82
                 phone:
                   type: string
-                  example: +821012341234
+                  description: 모바일 전화번호
+                  example: '01012341234'
+                name:
+                  type: string
+                  description: 이름
+                  example: 'Harry Oh'
                 marketingAllowed:
                   type: boolean
                   example: true
@@ -237,35 +298,37 @@ paths:
               schema:
                 type: object
                 properties:
+                  countryCallingCode:
+                    type: string
+                    description: 국제 전화번호 코드
+                    example: +82
                   phone:
                     type: string
-                    example: +821012341234
+                    description: 모바일 전화번호
+                    example: '01012341234'
                   userStatus:
                     $ref: '#/components/schemas/userStatus'
                     example: EPH_MEMBER
         401:
           description: ALREADY_REGISTERED 가입중 이거나 완료된 회원입니다.
-  /auth/member/status:
+  /auth/signup10/otp/mobile/verify:
     post:
-      summary: 회원 상태 확인
-      description: 전화번호를 이용해 회원가입/임시회원/비회원 여부 확인
-      operationId: postAuthMemberStatus
+      summary: otp 확인. 신규가입
+      description: 요청한 otp 확인
+      operationId: postAuthSignupOtpMobileVerify
       tags:
-        - Auth Member
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                phone:
-                  type: string
-                  description: 확인하려는 전화번호
-                  example: '+821012341234'
-                deviceId:
-                  type: string
-                  description: 앱이 설치되어 있는 device id
-                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
+        - Auth Signup
+      parameters:
+        - in: header
+          name: signUp-jwt
+          description: 임시회원 토큰
+          schema:
+            type: string
+        - in: header
+          name: otpcode
+          description: 발급받은 otp 번호
+          schema:
+            type: string
       responses:
         200:
           description: Success
@@ -274,25 +337,20 @@ paths:
               schema:
                 type: object
                 properties:
-                  userStatus:
-                    $ref: '#/components/schemas/userStatus'
-                    example: NOT_MEMBER
-                  onboardingStatus?:
-                    $ref: '#/components/schemas/onboardingStatus'
-                  isDeviceNotChanged:
-                    type: boolean
-                    description: device id가 일치 하지 않을때 false. (deviceId값을 보내지 않을때는 true값만 리턴한다.)
-                    example: true
-        401:
-          description: |
-            - INVALID_INVESTOR_TYPE, 개인 회원이 아닙니다.
-  /auth/member/passcode:
-    post:
-      summary: 비밀번호
+                  result:
+                    type: string
+                    example: OK
+        400:
+          description: INVALID_CODE, The code provided does not match the expected value
+      security:
+        - bearerAuth: []
+  /auth/signup20/member/passcode:
+    put:
+      summary: 비밀번호.
       description: 새로운 비밀번호를 생성한다.
-      operationId: postAuthMemberPasscode
+      operationId: putAuthMemberPasscode
       tags:
-        - Auth Member
+        - Auth Signup
       parameters:
         - in: header
           name: signUp-jwt
@@ -320,52 +378,30 @@ paths:
                     type: string
                     example: OK
       security:
-        - cookieAuth: []
-  /auth/member/encryptedPK:
-    put:
-      summary: 패스워드 작업 종료
-      description: 생성된 복구 패스워드를 이용하여 PrivateKey를 암호화하여 서버에 저장한다.
-      operationId: putAuthMemberEncriptedPK
-      tags:
-        - Auth Member
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-                    example: OK
-      security:
-        - cookieAuth: []
-  /auth/otp/{otpType}/send:
+        - bearerAuth: []
+  /auth/signup30/otp/email:
     post:
       tags:
-        - Auth OTP
-      summary: 회원 토큰 없이 모바일 OTP 인증
-      description: 로그인 없이 유저핸드폰으로 인증문자 요청
-      operationId: postAuthOtpTypeSend
+        - Auth Signup
+      summary: 이메일 OTP 인증요청. 신규가입
+      description: 로그인 없이 이메일로 인증번호 요청
+      operationId: postAuthSignupOtpEmail
       parameters:
-        - in: path
-          required: true
-          name: otpType
-          description: 발송을 요청할 OTP Type 지정
+        - in: header
+          name: signUp-jwt
+          description: 임시회원 토큰
           schema:
             type: string
-            enum: [email|mobile]
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                phone:
+                email:
                   type: string
-                  description: 인증 받는 유저의 핸드폰번호
-                  example: +821012341234
+                  description: 인증 받는 유저의 이메일
+                  example: test@test.com
       responses:
         200:
           description: "successful operation"
@@ -380,35 +416,16 @@ paths:
                     type: number
                     description: verify 남은 시간(초)
         400:
-          description: |
-            - "INVALID_TYPE, No OptType: {type}"
-            - SMS_REQUEST_ERROR
-            - Throttled, Throttled	You are trying to send more than the maximum of 30 requests per second.
-            - ParameterMissing, Your request is incomplete and missing the mandatory parameter $parameter	The stated parameter is missing.
-            - InvalidValue, Invalid value for parameter $parameter	Invalid value for parameter.If you see Facility not allowed in the error text, check that you are using the correct Base URL in your request.
-            - InvalidCredential, Invalid credentials were provided	The supplied API key or secret in the request is either invalid or disabled.
-            - InternalError, Internal Error	An error occurred processing this request in the Cloud Communications Platform.
-            - Unable, "The Nexmo platform was unable to process this message for the following reason - $reason	The request could not be routed."
-            - BlackList, The number you are trying to verify is blacklisted for verification.
-            - Barred, The api_key you supplied is for an account that has been barred from submitting messages.
-            - OutOfBalance, Partner quota exceeded	Your account does not have sufficient credit to process this request.
-            - Duplicated, Concurrent verifications to the same number are not allowed
-            - Rejected, The destination number is not in a supported network	The request has been rejected. Find out more about this error in the Knowledge Base
-            - NotMatched, The code inserted does not match the expected value
-            - WrongCode, The wrong code was provided too many times	You can run Verify check on a specific request_id up to three times unless a new verification code is generated. If you check a request more than three times, it is set to FAILED and you cannot check it again.
-            - TooManyRequest, Too many request_ids provided	You added more than the maximum ten request_ids to your request.
-            - NoMoreEvent, No more events are left to execute for this request
-            - NotSupport, This account does not support the parameter - pin_code.	Only certain accounts have the ability to set the pin_code. Please contact your account manager for more information.
-            - NoRequestFound, No request found	There are no matching verify requests.
-        401:
-          description: NO_USER 입력한 전화번호와 일치하는 유저가 없습니다.
-  /auth/otp/{otpType}/verify:
+          description:  이미 존재하는 이메일입니다.
+      security:
+        - bearerAuth: []
+  /auth/signup40/otp/email/verify:
     post:
-      summary: otp 확인
+      summary: otp 확인. 신규가입
       description: 요청한 otp 확인
-      operationId: postAuthOtpType
+      operationId: postAuthSignupOtpEmailVerify
       tags:
-        - Auth OTP
+        - Auth Signup
       parameters:
         - in: header
           name: signUp-jwt
@@ -420,38 +437,6 @@ paths:
           description: 발급받은 otp 번호
           schema:
             type: string
-        - in: path
-          required: true
-          name: otpType
-          description: 발송을 요청할 OTP Type
-          schema:
-            type: string
-            enum: [email|mobile]
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                deviceModel:
-                  type: string
-                  example: Mi MIX 2S
-                deviceId:
-                  type: string
-                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
-                osVersion:
-                  type: string
-                  example: 29
-                appVersion:
-                  type: string
-                  example: 3.1.5
-                adsId?:
-                  type: string
-                  example: a472b9b2-39df-49e6-aa6b-f465d9f5c6d1
-                devicePlatform?:
-                  type: string
-                  enum: [ANDROID, IOS]
-                  example: ANDROID
       responses:
         200:
           description: Success
@@ -465,57 +450,19 @@ paths:
                     example: OK
         400:
           description: INVALID_CODE, The code provided does not match the expected value
-        401:
-          description: NO_USER 입력한 이메일과 일치하는 유저가 없습니다.
       security:
-        - cookieAuth: []
-  /auth/login/passcode:
+        - bearerAuth: []
+  /auth/signup50/member/finish:
     post:
-      summary: Passcode를 입력
-      description: 전화번호와 password 확인, 로그인 시도 5회 초과 검사
-      operationId: postAuthLoginPasscode
+      summary: 회원가입완료
+      description: 암호화된 PrivateKey를 저장하고 세션을 생성한다.
+      operationId: postAuthSignupMemberFinish
       tags:
-        - Auth Login
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                phone:
-                  type: string
-                  example: +821012341234
-                password:
-                  type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  userStatus:
-                    type: string
-                    enum: [NOT_MEMBER, EPH_MEMBER, ONBOARDING_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
-        401:
-          description: |
-            - NO_USER, 없는 유저 입니다.
-            - INVALID_PASSWORD, 잘못된 비밀번호 입니다.
-            - BAN_MEMBER, 로그인 금지된 계정입니다. 관리자에게 문의 하세요.
-        403:
-          description: EXCEED_RETRY 로그인 시도 횟수 5회 초과 입니다.
-  /auth/login/otp:
-    post:
-      summary: OTP를 이용한 로그인
-      description: OTP를 이용하여 최종 로그인을 한다. (member / onboardingMember)
-      operationId: postAuthLoginOtp
-      tags:
-        - Auth Login
+        - Auth Signup
       parameters:
         - in: header
-          name: otpcode
-          description: otp 인증 코드
+          name: signUp-jwt
+          description: 임시회원 토큰
           schema:
             type: string
       requestBody:
@@ -524,10 +471,10 @@ paths:
             schema:
               type: object
               properties:
-                phone:
+                encryptedPK:
                   type: string
-                  description: 모바일 번호
-                  example: +821012341234
+                  description: 암호화된 PrivateKey
+                  example: 238909as9d99823khafsd9f8asd9f8h23kjfhaws9d8f
                 deviceModel:
                   type: string
                   example: Mi MIX 2S
@@ -550,144 +497,6 @@ paths:
       responses:
         200:
           description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  phone:
-                    type: string
-                    example: +821012341234
-                  userStatus:
-                    type: string
-                    enum: [NOT_MEMBER, TEMP_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
-                    example: MEMBER
-                  onboardingStatus:
-                    $ref: '#/components/schemas/onboardingStatus'
-                  authLevel:
-                    $ref: '#/components/schemas/AuthLevel'
-                    type: string
-                  isMigrationAgree:
-                    type: boolean
-                    description: migration 동의 여부
-                    example: false
-        401:
-          description: |
-            - NO_USER 입력한 이메일과 일치하는 유저가 없습니다.
-            - BAN_MEMBER 로그인 금지된 계정입니다. 관리자에게 문의 하세요.
-            - INVALID_MEMBER 회원가입이 완료되지 않았습니다.
-        403:
-          description: |
-            - EXCEED_RETRY 로그인 시도 횟수 5회 초과 입니다.
-            - INVALID_PASSWORD 잘못된 비밀번호 입니다.
-        500:
-          description: NO_URL_OR_METHOD 로그인 jwt fund에 반영 실패!
-  /auth/login/bio:
-    post:
-      summary: '바이오 인증'
-      description: 바이오 인증 통한 최종 로그인 (member / onboardingMember)
-      operationId: postAuthLoginBio
-      tags:
-        - Auth Login
-      parameters:
-        - in: header
-          name: nonce
-          description: 바이오sign시, 사용한 nonce
-          schema:
-            type: string
-        - in: header
-          name: signature
-          description: 바이오sign시, 나온 signature. url-safe base64
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                phone:
-                  type: string
-                  description: 모바일 번호
-                  example: +821012341234
-                deviceModel:
-                  type: string
-                  example: Mi MIX 2S
-                deviceId:
-                  type: string
-                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
-                osVersion:
-                  type: string
-                  example: 29
-                appVersion:
-                  type: string
-                  example: 3.1.5
-                adsId?:
-                  type: string
-                  example: a472b9b2-39df-49e6-aa6b-f465d9f5c6d1
-                devicePlatform?:
-                  type: string
-                  enum: [ANDROID, IOS]
-                  example: ANDROID
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  phone:
-                    type: string
-                    example: +821012341234
-                  userStatus:
-                    type: string
-                    enum: [NOT_MEMBER, TEMP_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
-                    example: MEMBER
-                  onboardingStatus:
-                    $ref: '#/components/schemas/onboardingStatus'
-                  authLevel:
-                    $ref: '#/components/schemas/AuthLevel'
-                    type: string
-                  isMigrationAgree:
-                    type: boolean
-                    description: migration 동의 여부
-                    example: false
-        401:
-          description: |
-            - NO_USER 입력한 이메일과 일치하는 유저가 없습니다.
-            - BAN_MEMBER 로그인 금지된 계정입니다. 관리자에게 문의 하세요.
-            - INVALID_MEMBER 회원가입이 완료되지 않았습니다.
-        403:
-          description: |
-            - EXCEED_RETRY 로그인 시도 횟수 5회 초과 입니다.
-            - INVALID_PASSWORD 잘못된 비밀번호 입니다.
-        500:
-          description: NO_URL_OR_METHOD 로그인 jwt fund에 반영 실패!
-
-  /auth/member/bio:
-    get:
-      tags:
-        - Auth Bio Verification
-      summary: "[onboarding] 신규"
-      description: 바이오 인증요청
-      operationId: getAuthMemberBio
-      parameters:
-        - in: header
-          name: signature
-          description: signature 값, url-safe base64타입
-          example: MEYCIQDIhAvWQFRqa_vV8PCfKRe9R9ia955dlL7S6UG_Zp8RtgIhANdrVql-ZjrpCxaM0saAf2gBqXRKeXIX5USinmncahLX
-          schema:
-            type: string
-        - in: header
-          name: nonce
-          description: signature에 사용된 nonce 값
-          example: 37790051
-          schema:
-            type: number
-      responses:
-        200:
-          description: successful operation
           content:
             application/json:
               schema:
@@ -696,18 +505,15 @@ paths:
                   result:
                     type: string
                     example: OK
-        404:
-          description: |
-            - NO_DATA, Not find waiting with userId
-            - NO_USER, User not found with {email}
       security:
-        - cookieAuth: []
+        - bearerAuth: []
+  /auth/signup54-optional/member/bio/publicKey:
     post:
       tags:
-        - Auth Bio
-      summary: '[onboarding/member] bio 인증을 위한 public key 등록, 신규'
+        - Auth Signup
+      summary: 'bio 인증을 위한 public key 등록, 신규'
       description: 'bio 인증을 위한 public key 등록, 신규'
-      operationId: postAuthMemberBio
+      operationId: postSignupMemberBioPublicKey
       requestBody:
         content:
           application/json:
@@ -743,12 +549,13 @@ paths:
             - INVALID_INPUT, 'Different deviceId'
       security:
         - cookieAuth: []
-  /auth/bio/challenge:
-    post:
+  /auth/signup54-optional/member/bio/challenge:
+    get:
       tags:
-        - Auth Bio Verification
-      summary: "[onboarding] 신규"
+        - Auth Signup
+      summary: "신규"
       description: 모바일에서 바이오인증을 위한 메시지 중 challenge값 요청
+      operationId: getAuthSignupMemberBioChallenge
       responses:
         200:
           description: successful operation
@@ -767,15 +574,50 @@ paths:
             - NO_USER, User not found with {email}
       security:
         - cookieAuth: []
-
-  # Suitability
-  /auth/suitability:
+  /auth/signup55-optional/member/bio/verify:
+    post:
+      tags:
+        - Auth Signup
+      summary: "신규"
+      description: 바이오 인증요청
+      operationId: postAuthSignupMemberBio
+      parameters:
+        - in: header
+          name: nonce
+          description: 바이오sign시, 사용한 nonce
+          schema:
+            type: number
+            example: 37790051
+        - in: header
+          name: signature
+          description: 바이오sign시, 나온 signature. url-safe base64
+          schema:
+            type: string
+            example: MEYCIQDIhAvWQFRqa_vV8PCfKRe9R9ia955dlL7S6UG_Zp8RtgIhANdrVql-ZjrpCxaM0saAf2gBqXRKeXIX5USinmncahLX
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+        404:
+          description: |
+            - NO_DATA, Not find waiting with userId
+            - NO_USER, User not found with {email}
+      security:
+        - cookieAuth: []
+  /auth/signup60/member/suitability:
     get:
       summary: suitability 질문
       description: suitability 질문 목록 조회
-      operationId: getAuthSuitability
+      operationId: getSignupMemberAuthSuitability
       tags:
-        - Auth Suitability
+        - Auth Signup
       parameters:
         - in: query
           name: language
@@ -797,12 +639,13 @@ paths:
                   $ref: "#/components/schemas/SuitabilityQuestions"
       security:
         - cookieAuth: []
+  /auth/signup70/member/suitability/answer:
     post:
       summary: suitability 답변
       description: suitability 답변 저장
-      operationId: postAuthSuitability
+      operationId: postAuthSignupMemberSuitabilityAnswer
       tags:
-        - Auth Suitability
+        - Auth Signup
       requestBody:
         content:
           application/json:
@@ -834,12 +677,13 @@ paths:
                   investProfile:
                     type: string
                     enum: ['AGGRESSIVE', 'BALANCED', 'CONSERVATIVE']
-  /auth/suitability/finish:
-    put:
+  /auth/signup80/member/suitability/finish:
+    post:
       summary: suitability 완료
       description: suitability 끝날때 호출 해줘야 하는 api, 호출하면 onboardingStatus가 SUITABILITY_DONE로 변경된다.
+      operationId: postAuthSignupMember/SuitabilityFinish
       tags:
-        - Auth Suitability
+        - Auth Signup
       requestBody:
         content:
           application/json:
@@ -862,6 +706,378 @@ paths:
                     example: OK
       security:
         - cookieAuth: []
+
+  # signin
+  /auth/signin/passcode:
+    post:
+      summary: Passcode를 입력
+      description: 전화번호와 passcode 확인, 로그인 시도 5회 초과 검사
+      operationId: postAuthSigninPasscode
+      tags:
+        - Auth SignIn
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userStatus:
+                    type: string
+                    enum: [NOT_MEMBER, EPH_MEMBER, ONBOARDING_MEMBER,
+                          BANED_MEMBER, MEMBER, DELETED_MEMBER]
+        401:
+          description: |
+            - NO_USER, 없는 유저 입니다.
+            - INVALID_PASSWORD, 잘못된 비밀번호 입니다.
+            - BAN_MEMBER, 로그인 금지된 계정입니다. 관리자에게 문의 하세요.
+        403:
+          description: EXCEED_RETRY 로그인 시도 횟수 5회 초과 입니다.
+  /auth/otp/mobile/{action}:
+    post:
+      tags:
+        - Auth OTP
+      summary: 모바일 OTP 인증 요청
+      description: 모바일 OTP 인증 요청
+      operationId: postAuthOtpMobileAction
+      parameters:
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+            enum: [invest, withdraw, backUpWallet, qrOp, changePassword, signin,
+                  changeBankAccount, deletedMember, adminSignIn, usersMe,
+                  reRegisterPublic, currencyExchange, changePhoneNumber]
+            example: invest
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                properties:
+                  requestId:
+                    type: string
+                    description: otp 인증 키값
+                  remainTime:
+                    type: number
+                    description: verify 남은 시간(초)
+        400:
+          description: |
+            - "INVALID_TYPE, No OptType: {action}"
+            - SMS_REQUEST_ERROR
+            - Throttled, Throttled	You are trying to send more than the maximum of 30 requests per second.
+            - ParameterMissing, Your request is incomplete and missing the mandatory parameter $parameter	The stated parameter is missing.
+            - InvalidValue, Invalid value for parameter $parameter	Invalid value for parameter.If you see Facility not allowed in the error text, check that you are using the correct Base URL in your request.
+            - InvalidCredential, Invalid credentials were provided	The supplied API key or secret in the request is either invalid or disabled.
+            - InternalError, Internal Error	An error occurred processing this request in the Cloud Communications Platform.
+            - Unable, "The Nexmo platform was unable to process this message for the following reason - $reason	The request could not be routed."
+            - BlackList, The number you are trying to verify is blacklisted for verification.
+            - Barred, The api_key you supplied is for an account that has been barred from submitting messages.
+            - OutOfBalance, Partner quota exceeded	Your account does not have sufficient credit to process this request.
+            - Duplicated, Concurrent verifications to the same number are not allowed
+            - Rejected, The destination number is not in a supported network	The request has been rejected. Find out more about this error in the Knowledge Base
+            - NotMatched, The code inserted does not match the expected value
+            - WrongCode, The wrong code was provided too many times	You can run Verify check on a specific request_id up to three times unless a new verification code is generated. If you check a request more than three times, it is set to FAILED and you cannot check it again.
+            - TooManyRequest, Too many request_ids provided	You added more than the maximum ten request_ids to your request.
+            - NoMoreEvent, No more events are left to execute for this request
+            - NotSupport, This account does not support the parameter - pin_code.	Only certain accounts have the ability to set the pin_code. Please contact your account manager for more information.
+            - NoRequestFound, No request found	There are no matching verify requests.
+        401:
+          description: NO_USER 입력한 전화번호와 일치하는 유저가 없습니다.
+  /auth/signin/otp:
+    post:
+      summary: OTP를 이용한 로그인
+      description: OTP를 이용하여 최종 로그인을 한다.
+      operationId: postAuthsigninOtp
+      tags:
+        - Auth SignIn
+      parameters:
+        - in: header
+          name: otpcode
+          description: otp 인증 코드
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                countryCallingCode:
+                  type: string
+                  description: 국제 전화번호 코드
+                  example: +82
+                phone:
+                  type: string
+                  description: 모바일 전화번호
+                  example: '01012341234'
+                deviceModel:
+                  type: string
+                  example: Mi MIX 2S
+                deviceId:
+                  type: string
+                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
+                osVersion:
+                  type: string
+                  example: 29
+                appVersion:
+                  type: string
+                  example: 3.1.5
+                adsId?:
+                  type: string
+                  example: a472b9b2-39df-49e6-aa6b-f465d9f5c6d1
+                devicePlatform?:
+                  type: string
+                  enum: [ANDROID, IOS]
+                  example: ANDROID
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  countryCallingCode:
+                    type: string
+                    description: 국제 전화번호 코드
+                    example: +82
+                  phone:
+                    type: string
+                    description: 모바일 전화번호
+                    example: '01012341234'
+                  userStatus:
+                    type: string
+                    enum: [NOT_MEMBER, TEMP_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
+                    example: MEMBER
+                  onboardingStatus:
+                    $ref: '#/components/schemas/onboardingStatus'
+                  authLevel:
+                    $ref: '#/components/schemas/AuthLevel'
+                    type: string
+                  isMigrationAgree:
+                    type: boolean
+                    description: migration 동의 여부
+                    example: false
+        401:
+          description: |
+            - NO_USER 입력한 이메일과 일치하는 유저가 없습니다.
+            - BAN_MEMBER 로그인 금지된 계정입니다. 관리자에게 문의 하세요.
+            - INVALID_MEMBER 회원가입이 완료되지 않았습니다.
+        403:
+          description: |
+            - EXCEED_RETRY 로그인 시도 횟수 5회 초과 입니다.
+            - INVALID_PASSWORD 잘못된 비밀번호 입니다.
+        500:
+          description: NO_URL_OR_METHOD 로그인 jwt fund에 반영 실패!
+  /auth/member/bio/challenge/{action}:
+    get:
+      tags:
+        - Auth Bio
+      summary: 바이오 인증을 위한 challenge값 요청
+      description: 모바일에서 바이오인증을 위한 메시지 중 challenge값 요청
+      operationId: getAuthMemberBioChallenge
+      parameters:
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+            enum: [invest, addFunds, withdraw, backUpWallet, qrOp, signin,
+                  changeBankAccount, deletedMember, usersMe, registerPublic,
+                  currencyExchange]
+            example: invest
+          description: 바이오 인증을 하기 위한 동작
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  challenge:
+                    type: string
+                    example: "qs2PzfZH_Q"
+                    description: 10자리 랜덤문자
+        404:
+          description: |
+            - NO_DATA, Not find waiting with userId
+            - NO_USER, User not found with {email}
+      security:
+        - cookieAuth: []
+  /auth/signin/bio:
+    post:
+      summary: '바이오 인증'
+      description: 바이오 인증 통한 최종 로그인
+      operationId: postAuthSigninBio
+      tags:
+        - Auth SignIn
+        - Auth Bio
+      parameters:
+        - in: header
+          name: nonce
+          description: 바이오sign시, 사용한 nonce
+          schema:
+            type: string
+            example: 37790051
+        - in: header
+          name: signature
+          description: 바이오sign시, 나온 signature. url-safe base64
+          schema:
+            type: string
+            example: MEYCIQDIhAvWQFRqa_vV8PCfKRe9R9ia955dlL7S6UG_Zp8RtgIhANdrVql-ZjrpCxaM0saAf2gBqXRKeXIX5USinmncahLX
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                countryCallingCode:
+                  type: string
+                  description: 국제 전화번호 코드
+                  example: +82
+                phone:
+                  type: string
+                  description: 모바일 전화번호
+                  example: '01012341234'
+                deviceModel:
+                  type: string
+                  example: Mi MIX 2S
+                deviceId:
+                  type: string
+                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
+                osVersion:
+                  type: string
+                  example: 29
+                appVersion:
+                  type: string
+                  example: 3.1.5
+                adsId?:
+                  type: string
+                  example: a472b9b2-39df-49e6-aa6b-f465d9f5c6d1
+                devicePlatform?:
+                  type: string
+                  enum: [ANDROID, IOS]
+                  example: ANDROID
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  countryCallingCode:
+                    type: string
+                    description: 국제 전화번호 코드
+                    example: +82
+                  phone:
+                    type: string
+                    description: 모바일 전화번호
+                    example: '01012341234'
+                  userStatus:
+                    type: string
+                    enum: [NOT_MEMBER, TEMP_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
+                    example: MEMBER
+                  onboardingStatus:
+                    $ref: '#/components/schemas/onboardingStatus'
+                  authLevel:
+                    $ref: '#/components/schemas/AuthLevel'
+                    type: string
+                  isMigrationAgree:
+                    type: boolean
+                    description: migration 동의 여부
+                    example: false
+        401:
+          description: |
+            - NO_USER 입력한 이메일과 일치하는 유저가 없습니다.
+            - BAN_MEMBER 로그인 금지된 계정입니다. 관리자에게 문의 하세요.
+            - INVALID_MEMBER 회원가입이 완료되지 않았습니다.
+        403:
+          description: |
+            - EXCEED_RETRY 로그인 시도 횟수 5회 초과 입니다.
+            - INVALID_PASSWORD 잘못된 비밀번호 입니다.
+        500:
+          description: NO_URL_OR_METHOD 로그인 jwt fund에 반영 실패!
+
+  /auth/otp/mobile/verify:
+    post:
+      summary: otp 확인
+      description: 요청한 otp 확인
+      operationId: postAuthMobileVerify
+      tags:
+        - Auth OTP
+      parameters:
+        - in: header
+          name: otpcode
+          description: 발급받은 otp 번호
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+        400:
+          description: INVALID_CODE, The code provided does not match the expected value
+      security:
+        - cookieAuth: []
+  /auth/member/bio/verify:
+    post:
+      tags:
+        - Auth Bio
+      summary: 바이오 인증
+      description: 바이오 인증요청
+      operationId: postAuthMemberBioVerify
+      parameters:
+        - in: header
+          name: nonce
+          description: 바이오sign시, 사용한 nonce
+          schema:
+            type: number
+            example: 37790051
+        - in: header
+          name: signature
+          description: 바이오sign시, 나온 signature. url-safe base64
+          schema:
+            type: string
+            example: MEYCIQDIhAvWQFRqa_vV8PCfKRe9R9ia955dlL7S6UG_Zp8RtgIhANdrVql-ZjrpCxaM0saAf2gBqXRKeXIX5USinmncahLX
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+        404:
+          description: |
+            - NO_DATA, Not find waiting with userId
+            - NO_USER, User not found with {email}
+      security:
+        - cookieAuth: []
+
 components:
   securitySchemes:
     cookieAuth:
