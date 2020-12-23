@@ -148,10 +148,10 @@ paths:
                 properties:
                   userStatus:
                     $ref: '#/components/schemas/userStatus'
-                    example: EPH_MEMBER
+                    example: NOT_MEMBER
                   onboardingStatus:
                     $ref: '#/components/schemas/onboardingStatus'
-                    example: INIT_MEMBER
+                    example: ''
                   authLevel:
                     $ref: '#/components/schemas/AuthLevel'
                     example: NEW
@@ -169,7 +169,7 @@ paths:
       description: 로그인 후 session 유효 확인
       operationId: getAuthSessionStatus
       tags:
-        - Auth Users
+        - Auth
       responses:
         200:
           description: Success
@@ -179,13 +179,14 @@ paths:
                 type: object
                 properties:
                   userStatus:
-                    type: string
-                    enum: [NOT_MEMBER, EPH_MEMBER, ONBOARDING_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
+                    $ref: '#/components/schemas/userStatus'
+                    example: ONBOARDING_MEMBER
                   onboardingStatus:
                     $ref: '#/components/schemas/onboardingStatus'
+                    example: SUITABILITY_DONE
                   authLevel:
                     $ref: '#/components/schemas/AuthLevel'
-                    type: string
+                    example: PROFILE
         401:
           description: |
             - INVALID_SESSION, session expired.
@@ -198,7 +199,7 @@ paths:
       description: 전화번호를 이용해 회원가입/임시회원/비회원 여부 확인
       operationId: getAuthMemberStatus
       tags:
-        - Auth Member
+        - Auth
       parameters:
         - in: query
           name: countryCallingCode
@@ -714,7 +715,7 @@ paths:
       description: 전화번호와 passcode 확인, 로그인 시도 5회 초과 검사
       operationId: postAuthSigninPasscode
       tags:
-        - Auth SignIn
+        - Auth Signin
       requestBody:
         content:
           application/json:
@@ -735,6 +736,7 @@ paths:
                     type: string
                     enum: [NOT_MEMBER, EPH_MEMBER, ONBOARDING_MEMBER,
                           BANED_MEMBER, MEMBER, DELETED_MEMBER]
+                    example: ONBOARDING_MEMBER
         401:
           description: |
             - NO_USER, 없는 유저 입니다.
@@ -769,9 +771,11 @@ paths:
                   requestId:
                     type: string
                     description: otp 인증 키값
+                    example: saldjf23r23
                   remainTime:
                     type: number
                     description: verify 남은 시간(초)
+                    example: 60
         400:
           description: |
             - "INVALID_TYPE, No OptType: {action}"
@@ -801,7 +805,8 @@ paths:
       description: OTP를 이용하여 최종 로그인을 한다.
       operationId: postAuthsigninOtp
       tags:
-        - Auth SignIn
+        - Auth Signin
+        - Auth OTP
       parameters:
         - in: header
           name: otpcode
@@ -923,7 +928,7 @@ paths:
       description: 바이오 인증 통한 최종 로그인
       operationId: postAuthSigninBio
       tags:
-        - Auth SignIn
+        - Auth Signin
         - Auth Bio
       parameters:
         - in: header
@@ -1011,7 +1016,6 @@ paths:
             - INVALID_PASSWORD 잘못된 비밀번호 입니다.
         500:
           description: NO_URL_OR_METHOD 로그인 jwt fund에 반영 실패!
-
   /auth/otp/mobile/verify:
     post:
       summary: otp 확인
@@ -1117,8 +1121,8 @@ components:
       enum: [AUS, CAN, CHE, CHN, EUR, GBR, HKG, JPN, NZL, NOR, SWE, SGP, USA]
     onboardingStatus:
       type: string
-      enum: [INIT_MEMBER, EMAIL_VERIFIED, PASSWORD_SET, OTP_VERIFIED,
-            SUITABILITY_DONE, PROFILE_SUBMITTED, ID_SUBMITTED, KYC_READY,
+      enum: [INIT_MEMBER, MOBILE_OTP_VERIFIED, PASSWORD_SET, EMAIL_OTP_VERIFIED,
+            PK_SET, SUITABILITY_DONE, PROFILE_SUBMITTED, ID_SUBMITTED, KYC_READY,
             PENDING_KYCAML, OCR_FAILED, FACE_FAILED, EDD_REQUIRED, POA_REQUIRED,
             POA_FAILED, UNDER18, DUPLICATE_PASSPORT, REJECTED_KYCAML,
             WHITELISTING, RI_VERIFIED]
