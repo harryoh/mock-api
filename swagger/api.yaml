@@ -5,6 +5,9 @@ info:
 servers:
   - url: /v1
 paths:
+  #---
+  # SYS API
+  #---
   /sys/configs/app:
     get:
       tags:
@@ -125,6 +128,10 @@ paths:
                     $ref: '#/components/schemas/MobileVersion'
                   iosVersion:
                     $ref: '#/components/schemas/MobileVersion'
+
+  #---
+  # Auth API
+  #---
   /auth/token/status:
     get:
       summary: jwtToken 확인
@@ -1082,6 +1089,74 @@ paths:
       security:
         - cookieAuth: []
 
+  #---
+  # Fund API
+  #---
+  /fund/me/wallets:
+    get:
+      tags:
+        - Fund Me
+      summary: 자신의 Currency 별 Wallet List
+      description: 자신의 Currency 별로 Balance와 총 투자금액을 보여준다.
+      operationId: getFundMeWallets
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Wallet"
+        404:
+          description: |
+            - NO_DATA, Not find waiting with userId
+            - NO_USER, User not found with {email}
+      security:
+        - cookieAuth: []
+
+  /fund/me/wallet/{currency}:
+    get:
+      tags:
+        - Fund Me
+      summary: 자신의 지갑의 입출금 내역과 잔고 확인
+      description: 자신의 입출금, 투자, 배분등 돈이 들어오고 나가는 transaction 정보와 잔고 표시
+      operationId: getFundMeWalletCurrency
+      parameters:
+        - in: path
+          name: currency
+          required: true
+          schema:
+            type: string
+            $ref: "#/components/schemas/CurrencyCode"
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                properties:
+                  balance:
+                    type: integer
+                    description: 현재 잔액 (GBP기준)
+                    example: 15000
+                  currencyCode:
+                    $ref: "#/components/schemas/CurrencyCode"
+                  bankAccount?:
+                    type: object
+                    $ref: '#/components/schemas/BankAccount'
+                  txs:
+                    type: array
+                    description: 거래내역, group ordering (Waiting -> Processing -> Complete)
+                    items:
+                      $ref: "#/components/schemas/AccountTx"
+      security:
+        - cookieAuth: []
+
+#  /fund/requests/addFunds:
+# requests에 모두 통합할 것인가??
+# 몇가지는 빼서 별도로 만드는 것이 좋지 않을까? (addFunds, withdraw)
+
 components:
   securitySchemes:
     cookieAuth:
@@ -1091,7 +1166,7 @@ components:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT 
+      bearerFormat: JWT
   schemas:
     MobileVersion:
       type: object
@@ -1115,10 +1190,12 @@ components:
     CurrencyCode:
       type: string
       enum: [AUD, CAD, CHF, CNH, EUR, GBP, HKD, JPY, NZD, NOK, SEK, SGD, USD]
-      description: Multi Currency 통화코드
+      description: Currency 통화코드
+      example: GBP
     CountryCode:
       type: string
       enum: [AUS, CAN, CHE, CHN, EUR, GBR, HKG, JPN, NZL, NOR, SWE, SGP, USA]
+      example: GBR
     onboardingStatus:
       type: string
       enum: [INIT_MEMBER, MOBILE_OTP_VERIFIED, PASSWORD_SET, EMAIL_OTP_VERIFIED,
@@ -1166,3 +1243,124 @@ components:
                   type: string
                   description: 질문의 보기 내용
                   example: '0'
+    Wallet:
+      type: object
+      properties:
+        currencyName:
+          type: "string"
+          description: currency name
+          example: Pounds sterling
+        currencyCode:
+          $ref: "#/components/schemas/CurrencyCode"
+        countryCode:
+          $ref: "#/components/schemas/CountryCode"
+        symbol:
+          type: string
+          description: currency symbol
+          example: £
+        balance:
+          type: integer
+          example: 198000
+        totalInvested:
+          type: integer
+          example: 1000
+        investingAmount:
+          type: integer
+          example: 1000
+          description: fundraising 진행 중인 투자금액
+        investedAmount:
+          type: integer
+          example: 1000
+          description: fundraising 완료된 투자금액
+    BankAccount:
+      type: "object"
+      properties:
+        accountNumber:
+          type: "string"
+          description: "계좌번호"
+          example: '123*****789'
+        accountOwner:
+          type: "string"
+          description: "예금주명"
+          example: '홍길동'
+        confirmStatus:
+          type: "string"
+          description: 계좌 확인 상태 ["OPEN" - 확인코드 확인 전, "CODE_SENT" - 관리자가 확인코드와 함께 1$ 입금, "DONE" - 확인코드 확인 후]
+          enum: [WAITING_MONEY_TRANSFER, OPEN, CODE_SENT, REVIEWED, PROCESSING, READY, DISTRIBUTING, DONE, REJECTED]
+        bankName:
+          type: "string"
+          description: 은행이름
+          example: 'GoodBank'
+        bankCountry:
+          type: "string"
+          description: 은행 국가
+          example: 'UK'
+        swiftCode:
+          type: string
+          description: swiftCode
+    AccountTx:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: account id
+          example: 1
+        userId:
+          type: integer
+          description: 거래 발생 userId
+          example: 1
+        pecuniaryType:
+          type: string
+          description: 돈의 흐름 관점에서의 tx 형태
+          enum:
+            - WITHDRAW
+            - ADD_FUNDS
+            - INVEST
+            - REFUND
+            - INTEREST
+            - DIVIDEND
+            - PRINCIPAL
+            - FUNDING
+          example: ADD_FUNDS
+        amount:
+          type: integer
+          description: 거래액
+          example: 5000
+        fee:
+          type: integer
+          description: 수수료
+          example: 1000
+        processStatus:
+          type: string
+          description: 거래의 처리상태
+          enum:
+            - Waiting
+            - Processing
+            - Complete
+          example: Complete
+        lastBalance:
+          type: integer
+          description: transaction 발생 시점의 balance. 단, processStatus 가 "Waiting" 인 경우에는 null.
+          example: 10000
+        targetBankAccount:
+          type: string
+          description: transaction 으로 인해 입금될 은행 계좌 (add-fund 인 경우에 SA 은행 정보, withdraw 인 경우에 사용자 은행 정보)
+          example: 'HSBC 123*****789'
+        desc:
+          type: string
+          description: 거래 설명 (특정 asset 과 관련된 거래라면 asset 이름)
+          example: 'Hilton Hotel'
+        sourceId:
+          type: integer
+          description: 거래 발생 소스의 id (WITHDRAW의 경우 requests 테이블의 id)
+          example: 5000
+        sortDate:
+          type: "string"
+          description: txs 정렬 시 기준 값으로 사용
+          example: "2019-08-26T06:08:14.000Z"
+        createdAt:
+          type: "string"
+          example: "2019-08-26T06:08:14.000Z"
+        updatedAt:
+          type: "string"
+          example: "2019-08-26T06:08:14.000Z"
