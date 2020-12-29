@@ -296,11 +296,6 @@ paths:
       responses:
         200:
           description: Success
-          headers:
-            signUp-jwt:
-              schema:
-                type: string
-              description: 임시회원 토큰
           content:
             application/json:
               schema:
@@ -317,6 +312,10 @@ paths:
                   userStatus:
                     $ref: '#/components/schemas/userStatus'
                     example: EPH_MEMBER
+                  requestId:
+                    type: string
+                    description: otp 발송요청했을때 받은 인증 키값
+                    example: 'xxxxxxxxxxxxxxxxxxxxxxx'
         401:
           description: ALREADY_REGISTERED 가입중 이거나 완료된 회원입니다.
   /auth/signup10/otp/mobile/verify:
@@ -328,18 +327,28 @@ paths:
         - Auth Signup
       parameters:
         - in: header
-          name: signUp-jwt
-          description: 임시회원 토큰
-          schema:
-            type: string
-        - in: header
           name: otpcode
           description: 발급받은 otp 번호
           schema:
             type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                requestId:
+                  type: string
+                  description: otp 발송요청했을때 받은 인증 키값
+                  example: 'xxxxxxxxxxxxxxxxxxxxxxx'
       responses:
         200:
           description: Success
+          headers:
+            signUp-jwt:
+              schema:
+                type: string
+              description: 임시회원 토큰
           content:
             application/json:
               schema:
@@ -350,8 +359,6 @@ paths:
                     example: OK
         400:
           description: INVALID_CODE, The code provided does not match the expected value
-      security:
-        - bearerAuth: []
   /auth/signup20/member/passcode:
     put:
       summary: 비밀번호.
