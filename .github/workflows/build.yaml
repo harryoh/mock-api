@@ -42,9 +42,9 @@ jobs:
           ${{ secrets.MOCK_SWAGGER_DIR }}
     - name: Notify Result by Slack
       uses: 8398a7/action-slack@v3
-      if: ${{ failure() }}
+      # if: ${{ failure() }}
       with:
         status: ${{ job.status }}
-        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took 
+        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
       env:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
