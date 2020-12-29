@@ -1174,19 +1174,19 @@ components:
         minVersionCode:
           type: integer
           description: 최소 동작을 위한 mobile 버전 코드
-          example: 60
+          example: 1
         minVersionName:
           type: string
           description: 최소 동작을 위한 mobile 버전명
-          example: 1.1.0
+          example: 0.0.1
         latestVersionCode:
           type: integer
           description: 최신 mobile 버전 코드
-          example: 60
+          example: 1
         latestVersionName:
           type: string
           description: 최신 mobile 버전명
-          example: 1.1.0
+          example: 0.0.1
     CurrencyCode:
       type: string
       enum: [AUD, CAD, CHF, CNH, EUR, GBP, HKD, JPY, NZD, NOK, SEK, SGD, USD]
