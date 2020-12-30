@@ -633,9 +633,10 @@ paths:
           content:
             application/json:
               schema:
-                type: "array"
-                items:
-                  $ref: "#/components/schemas/SuitabilityQuestions"
+                type: object
+                properties:
+                  questions:
+                    $ref: "#/components/schemas/SuitabilityQuestions"
       security:
         - cookieAuth: []
   /auth/signup70/member/suitability/answer:
@@ -1292,7 +1293,7 @@ components:
           contents:
             type: string
             description: 질문 내용
-            example: 1 더하기 1은 2입니까?
+            example: 1 + 1
           items:
             type: array
             items:
@@ -1302,11 +1303,11 @@ components:
                   type: string
                   description: 질문의 보기 id
                   enum: ['A','B','C']
-                  example: A
+                  example: B
                 contents:
                   type: string
                   description: 질문의 보기 내용
-                  example: '0'
+                  example: '1'
     Wallet:
       type: object
       properties:
