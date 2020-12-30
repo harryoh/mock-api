@@ -1128,53 +1128,65 @@ paths:
                 $ref: "#/components/schemas/FundraisingView"
       security:
         - cookieAuth: []
-  /fund/investments:	
-    post:	
-      tags:	
-        - Fund Investment	
-      summary: 투자요청	
-      description: 해당 Asset에 투자를 한다.	
-      operationId: postFundInvestments	
-      parameters:	
-        - in: header	
-          name: otpcode?	
-          schema:	
-            type: string	
-          description: otp 인증 코드	
-        - in: header	
-          name: nonce?	
-          schema:	
-            type: string	
-          description: bio인증시, 모바일에서 사용된 nonce값	
-        - in: header	
-          name: signature?	
-          schema:	
-            type: string	
-          description: bio 인증시, signature, URL_SAFE_BASE64	
-      requestBody:	
-        content:	
-          application/json:	
-            schema:	
-              type: object	
-              properties:	
-                fundraisingId:	
-                  description: 투자할 fundrasing id	
-                  type: integer	
-                amount:	
-                  description: 투자금액 (GBP)	
-      responses:	
-        200:	
-          description: Success	
-          content:	
-            application/json:	
-              schema:	
-                type: object	
-                properties:	
-                  result:	
-                    type: string	
-                    example: OK	
-        404:	
+  /fund/investments:
+    post:
+      tags:
+        - Fund Investment
+      summary: 투자요청
+      description: 해당 Asset에 투자를 한다.
+      operationId: postFundInvestments
+      parameters:
+        - in: header
+          name: otpcode?
+          schema:
+            type: string
+          description: otp 인증 코드
+        - in: header
+          name: nonce?
+          schema:
+            type: string
+          description: bio인증시, 모바일에서 사용된 nonce값
+        - in: header
+          name: signature?
+          schema:
+            type: string
+          description: bio 인증시, signature, URL_SAFE_BASE64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fundraisingId:
+                  description: 투자할 fundrasing id
+                  type: integer
+                amount:
+                  description: 투자금액 (GBP)
+      responses:
+        200:
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: string
+                example: OK
+                # type: object
+                # $ref: "#/definitions/Investment"
+        400:
+          description: |
+            - FUND_NOT_STARATED: 시작 날짜 전에 투자 되는 경우.
+            - FUND_ENDED:  Fundraising 날짜가 지난 후에 투자 되는 경우.
+            - EXCEEDED_MAXIMUM: 최대 금액 초과한 경우.
+            - EXCEEDED_BALANCE: 잔고를 초과한 경우.
+            - LESS_THAN_MINIMUM: 시작 날짜 전에 투자 되는 경우.
+        401:
           description: "INVALID_KEY 입력한 key값이 잘못되었을때"
+        404:
+          description: "NO_RESOURCE: 존재하지 않는 fundraising."
+        500:
+          description: "BLOCKCHAIN_ERROR: 블록체인 에러가 난 경우."
+      security:
+        - cookieAuth: []
   /fund/wallets/me:
     get:
       tags:
@@ -1322,6 +1334,34 @@ components:
                   type: string
                   description: 질문의 보기 내용
                   example: '1'
+        example:
+          - number: 1
+            contents: 1 + 1
+            items:
+              - itemId: A
+                contents: '1'
+              - itemId: B
+                contents: '2'
+              - itemId: C
+                contents: '3'
+          - number: 2
+            contents: 1 + 2
+            items:
+              - itemId: A
+                contents: '1'
+              - itemId: B
+                contents: '2'
+              - itemId: C
+                contents: '3'
+          - number: 3
+            contents: 2 + 2
+            items:
+              - itemId: A
+                contents: '3'
+              - itemId: B
+                contents: '4'
+              - itemId: C
+                contents: '5'
     Wallet:
       type: object
       properties:
