@@ -1309,38 +1309,36 @@ components:
             description: 질문 내용
             example: 1 + 1
           items:
-            type: array
-            items:
-              -
-                itemId:
-                  type: string
-                  description: 질문의 보기 id
-                  enum: ['A','B','C']
-                  example: A
-                contents:
-                  type: string
-                  description: 질문의 보기 내용
-                  example: '1'
-              -
-                itemId:
-                  type: string
-                  description: 질문의 보기 id
-                  enum: ['A','B','C']
-                  example: B
-                contents:
-                  type: string
-                  description: 질문의 보기 내용
-                  example: '2'
-              -
-                itemId:
-                  type: string
-                  description: 질문의 보기 id
-                  enum: ['A','B','C']
-                  example: C
-                contents:
-                  type: string
-                  description: 질문의 보기 내용
-                  example: '3'
+            -
+              itemId:
+                type: string
+                description: 질문의 보기 id
+                enum: ['A','B','C']
+                example: A
+              contents:
+                type: string
+                description: 질문의 보기 내용
+                example: '1'
+            -
+              itemId:
+                type: string
+                description: 질문의 보기 id
+                enum: ['A','B','C']
+                example: B
+              contents:
+                type: string
+                description: 질문의 보기 내용
+                example: '2'
+            -
+              itemId:
+                type: string
+                description: 질문의 보기 id
+                enum: ['A','B','C']
+                example: C
+              contents:
+                type: string
+                description: 질문의 보기 내용
+                example: '3'
     Wallet:
       type: object
       properties:
