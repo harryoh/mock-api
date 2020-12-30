@@ -634,7 +634,8 @@ paths:
             application/json:
               schema:
                 type: object
-                $ref: "#/components/schemas/SuitabilityQuestions"
+                properties:
+                  $ref: "#/components/schemas/SuitabilityQuestions"
       security:
         - cookieAuth: []
   /auth/signup70/member/suitability/answer:
