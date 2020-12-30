@@ -1275,7 +1275,6 @@ components:
                   type: string
                   description: 질문의 보기 내용
                   example: '0'
-              type: object
               properties:
                 itemId:
                   type: string
@@ -1286,7 +1285,6 @@ components:
                   type: string
                   description: 질문의 보기 내용
                   example: '1'
-              type: object
               properties:
                 itemId:
                   type: string
