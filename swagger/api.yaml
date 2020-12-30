@@ -341,7 +341,7 @@ paths:
             signUp-jwt:
               schema:
                 type: string
-                example: "signup-jwt"
+                example: signup-jwt
               description: 임시회원 토큰
           content:
             application/json:
@@ -490,6 +490,12 @@ paths:
       responses:
         200:
           description: Success
+          headers:
+            liberty.sid:
+              schema:
+                type: string
+                example: 'wSJ7.PrtELmvrDCYN%2Bxj92i0%2BrH1d3Q1fwnBVvaEUTY5cHAY'
+              description: 로그인 세션
           content:
             application/json:
               schema:
