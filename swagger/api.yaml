@@ -341,7 +341,6 @@ paths:
             signUp-jwt:
               schema:
                 type: string
-                example: "signup-jwt"
               description: 임시회원 토큰
           content:
             application/json:
