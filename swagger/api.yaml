@@ -483,25 +483,9 @@ paths:
                   type: string
                   description: 암호화된 PrivateKey
                   example: 238909as9d99823khafsd9f8asd9f8h23kjfhaws9d8f
-                deviceModel:
-                  type: string
-                  example: Mi MIX 2S
-                deviceId:
-                  type: string
-                  example: 11a3eef5-a726-4ecd-a618-993131e67ae9
-                osVersion:
-                  type: string
-                  example: '29'
-                appVersion:
-                  type: string
-                  example: 3.1.5
-                adsId?:
-                  type: string
-                  example: a472b9b2-39df-49e6-aa6b-f465d9f5c6d1
-                devicePlatform?:
-                  type: string
-                  enum: [ANDROID, IOS]
-                  example: ANDROID
+                marketingAllowed:
+                  type: boolean
+                  example: true
       responses:
         200:
           description: Success
@@ -1092,10 +1076,57 @@ paths:
   #---
   # Fund API
   #---
-  /fund/me/wallets:
+  /fund/fundraisings:
     get:
       tags:
-        - Fund Me
+      - Fundraising
+      summary: get fundraising list
+      operationId: getFundFundraisings
+      parameters:
+        - in: query
+          name: currencyCode
+          description: 'Multi Currency 통화코드 (default: GBP)'
+          schema:
+            $ref: "#/components/schemas/CurrencyCode"
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/FundraisingView"
+      security:
+        - cookieAuth: []
+  /fund/fundraisings/{id}:
+    get:
+      tags:
+      - Fundraising
+      summary: get a fundraising
+      description: 조회 결과가 없을 경우 [] 빈배열 반환
+      operationId: getFundFundraisingId
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: number
+          description: 조회하려는 assetId
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Yet
+      security:
+        - cookieAuth: []
+  /fund/wallets/me:
+    get:
+      tags:
+        - Fund Wallets
       summary: 자신의 Currency 별 Wallet List
       description: 자신의 Currency 별로 Balance와 총 투자금액을 보여준다.
       operationId: getFundMeWallets
@@ -1115,10 +1146,10 @@ paths:
       security:
         - cookieAuth: []
 
-  /fund/me/wallet/{currency}:
+  /fund/wallet/me/{currency}:
     get:
       tags:
-        - Fund Me
+        - Fund Wallets
       summary: 자신의 지갑의 입출금 내역과 잔고 확인
       description: 자신의 입출금, 투자, 배분등 돈이 들어오고 나가는 transaction 정보와 잔고 표시
       operationId: getFundMeWalletCurrency
@@ -1345,17 +1376,17 @@ components:
         targetBankAccount:
           type: string
           description: transaction 으로 인해 입금될 은행 계좌 (add-fund 인 경우에 SA 은행 정보, withdraw 인 경우에 사용자 은행 정보)
-          example: 'HSBC 123*****789'
+          example: HSBC 123*****789
         desc:
           type: string
           description: 거래 설명 (특정 asset 과 관련된 거래라면 asset 이름)
-          example: 'Hilton Hotel'
+          example: Hilton Hotel
         sourceId:
           type: integer
           description: 거래 발생 소스의 id (WITHDRAW의 경우 requests 테이블의 id)
           example: 5000
         sortDate:
-          type: "string"
+          type: string
           description: txs 정렬 시 기준 값으로 사용
           example: "2019-08-26T06:08:14.000Z"
         createdAt:
@@ -1364,3 +1395,36 @@ components:
         updatedAt:
           type: "string"
           example: "2019-08-26T06:08:14.000Z"
+    FundraisingStatus:
+      type: "string"
+      enum:
+      - "LISTED"
+      - "STARTING"
+      - "RUNNING"
+      - "CLOSING"
+      - "CLOSED"
+      - "EXECUTING"
+      - "SUCCEEDED"
+      - "FAILED"
+    UserAssetStatus:
+      type: "string"
+      description: 자산 상태 - 유저용
+      enum:
+      - "ComingSoon"
+      - "Fundraising"
+      - "Processing"
+      - "Active"
+      - "Refunded"
+    FundraisingView:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 123123
+        assetName:
+          type: string
+          example: Shareable Asset Holdings
+        assetStatus:
+          $ref: '#/components/schemas/FundraisingStatus'
+        userAssetStatus:
+          $ref: '#/components/schemas/UserAssetStatus'
