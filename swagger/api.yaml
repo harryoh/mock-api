@@ -338,10 +338,10 @@ paths:
         200:
           description: Success
           headers:
-            signUp-jwt:
+            Set-Cookie:
               schema:
                 type: string
-                example: signup-jwt
+                example: signup-jwt=xxxx.signup-jwt-asdfsa; Path=/; HttpOnly
               description: 임시회원 토큰
           content:
             application/json:
@@ -491,10 +491,10 @@ paths:
         200:
           description: Success
           headers:
-            liberty.sid:
+            Set-Cookie:
               schema:
                 type: string
-                example: 'wSJ7.PrtELmvrDCYN%2Bxj92i0%2BrH1d3Q1fwnBVvaEUTY5cHAY'
+                example: liberty.sid=abcde12345; Path=/; HttpOnly
               description: 로그인 세션
           content:
             application/json:
@@ -549,7 +549,7 @@ paths:
       security:
         - cookieAuth: []
   /auth/signup54-optional/member/bio/challenge:
-    get:
+    post:
       tags:
         - Auth Signup
       summary: "신규"
@@ -885,7 +885,7 @@ paths:
         500:
           description: NO_URL_OR_METHOD 로그인 jwt fund에 반영 실패!
   /auth/member/bio/challenge/{action}:
-    get:
+    post:
       tags:
         - Auth Bio
       summary: 바이오 인증을 위한 challenge값 요청
@@ -1191,10 +1191,6 @@ paths:
       security:
         - cookieAuth: []
 
-#  /fund/requests/addFunds:
-# requests에 모두 통합할 것인가??
-# 몇가지는 빼서 별도로 만드는 것이 좋지 않을까? (addFunds, withdraw)
-
 components:
   securitySchemes:
     cookieAuth:
@@ -1499,6 +1495,17 @@ components:
             website:
               type: string
               example: https://www.company.com
+        bookRunners:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+                example: 1
+              name:
+                type: string
+                example: HSBC
         asset:
           type: object
           properties:
