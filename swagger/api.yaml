@@ -1334,79 +1334,79 @@ components:
                   type: string
                   description: 질문의 보기 내용
                   example: '1'
-        example:
-          - number: 1
-            contents: 1 + 1
-            items:
-              - itemId: A
-                contents: '1'
-              - itemId: B
-                contents: '2'
-              - itemId: C
-                contents: '3'
-          - number: 2
-            contents: 1 + 2
-            items:
-              - itemId: A
-                contents: '1'
-              - itemId: B
-                contents: '2'
-              - itemId: C
-                contents: '3'
-          - number: 3
-            contents: 2 + 2
-            items:
-              - itemId: A
-                contents: '3'
-              - itemId: B
-                contents: '4'
-              - itemId: C
-                contents: '5'
-          - number: 4
-            contents: 1 + 3
-            items:
-              - itemId: A
-                contents: '3'
-              - itemId: B
-                contents: '4'
-              - itemId: C
-                contents: '5'
-          - number: 5
-            contents: 2 + 3
-            items:
-              - itemId: A
-                contents: '3'
-              - itemId: B
-                contents: '4'
-              - itemId: C
-                contents: '5'
-          - number: 6
-            contents: 3 + 3
-            items:
-              - itemId: A
-                contents: '4'
-              - itemId: B
-                contents: '5'
-              - itemId: C
-                contents: '6'
-          - number: 7
-            contents: 1 + 4
-            items:
-              - itemId: A
-                contents: '4'
-              - itemId: B
-                contents: '5'
-              - itemId: C
-                contents: '6'
-          - number: 8
-            contents: 2 + 4
-            items:
-              - itemId: A
-                contents: '4'
-              - itemId: B
-                contents: '5'
-              - itemId: C
-                contents: '6'
+      example:
+        - number: 1
+          contents: 1 + 1
+          items:
+            - itemId: A
+              contents: '1'
+            - itemId: B
+              contents: '2'
+            - itemId: C
+              contents: '3'
+        - number: 2
+          contents: 1 + 2
+          items:
+            - itemId: A
+              contents: '1'
+            - itemId: B
+              contents: '2'
+            - itemId: C
+              contents: '3'
+        - number: 3
+          contents: 2 + 2
+          items:
+            - itemId: A
+              contents: '3'
+            - itemId: B
+              contents: '4'
+            - itemId: C
+              contents: '5'
+        - number: 4
+          contents: 1 + 3
+          items:
+            - itemId: A
+              contents: '3'
+            - itemId: B
+              contents: '4'
+            - itemId: C
+              contents: '5'
+        - number: 5
+          contents: 2 + 3
+          items:
+            - itemId: A
+              contents: '3'
+            - itemId: B
+              contents: '4'
+            - itemId: C
+              contents: '5'
+        - number: 6
+          contents: 3 + 3
+          items:
+            - itemId: A
+              contents: '4'
+            - itemId: B
+              contents: '5'
+            - itemId: C
+              contents: '6'
+        - number: 7
+          contents: 1 + 4
+          items:
+            - itemId: A
+              contents: '4'
+            - itemId: B
+              contents: '5'
+            - itemId: C
+              contents: '6'
+        - number: 8
+          contents: 2 + 4
+          items:
+            - itemId: A
+              contents: '4'
+            - itemId: B
+              contents: '5'
+            - itemId: C
+              contents: '6'
     Wallet:
       type: object
       properties:
