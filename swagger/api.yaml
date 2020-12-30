@@ -3,7 +3,7 @@ info:
   version: '1.0'
   title: Liberty API
 servers:
-  - url: /v1
+  - url: /api/v1
 paths:
   #---
   # SYS API
@@ -1128,6 +1128,53 @@ paths:
                 $ref: "#/components/schemas/FundraisingView"
       security:
         - cookieAuth: []
+  /fund/investments:	
+    post:	
+      tags:	
+        - Fund Investment	
+      summary: 투자요청	
+      description: 해당 Asset에 투자를 한다.	
+      operationId: postFundInvestments	
+      parameters:	
+        - in: header	
+          name: otpcode?	
+          schema:	
+            type: string	
+          description: otp 인증 코드	
+        - in: header	
+          name: nonce?	
+          schema:	
+            type: string	
+          description: bio인증시, 모바일에서 사용된 nonce값	
+        - in: header	
+          name: signature?	
+          schema:	
+            type: string	
+          description: bio 인증시, signature, URL_SAFE_BASE64	
+      requestBody:	
+        content:	
+          application/json:	
+            schema:	
+              type: object	
+              properties:	
+                fundraisingId:	
+                  description: 투자할 fundrasing id	
+                  type: integer	
+                amount:	
+                  description: 투자금액 (GBP)	
+      responses:	
+        200:	
+          description: Success	
+          content:	
+            application/json:	
+              schema:	
+                type: object	
+                properties:	
+                  result:	
+                    type: string	
+                    example: OK	
+        404:	
+          description: "INVALID_KEY 입력한 key값이 잘못되었을때"
   /fund/wallets/me:
     get:
       tags:
