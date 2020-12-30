@@ -1130,11 +1130,11 @@ paths:
         - cookieAuth: []
   /fund/investments:
     post:
-      tags:
-        - Fund Investment
       summary: 투자요청
       description: 해당 Asset에 투자를 한다.
       operationId: postFundInvestments
+      tags:
+        - Fund Investment
       parameters:
         - in: header
           name: otpcode?
@@ -1168,10 +1168,24 @@ paths:
           content:
             application/json:
               schema:
-                type: string
-                example: OK
-                # type: object
-                # $ref: "#/definitions/Investment"
+                type: object
+                properties:
+                    id:
+                      type: integer
+                      description: investment id
+                      example: 1
+                    txKey:
+                      type: string
+                      description: Signed Transaction을 받기 위한 고유 키
+                      example: 0esc8lk
+                    txdata:
+                      type: string
+                      description: un-signed serialized transaction
+                      example: 923478293u4293rj2929wfhwsafhaso9y8df0928hwfoas8hf09aw8hf
+                    timeout:
+                      type: integer
+                      description: 유효시간(초)
+                      example: 60
         400:
           description: |
             - FUND_NOT_STARATED: 시작 날짜 전에 투자 되는 경우.
@@ -1187,6 +1201,97 @@ paths:
           description: "BLOCKCHAIN_ERROR: 블록체인 에러가 난 경우."
       security:
         - cookieAuth: []
+  /fund/investments/{id}/transaction:
+    put:
+      summary: Sign Transaction
+      description: 서버로 부터 받은 transaction을 사인하여 전송한다.
+      operationId: putFundInvestmentsIdTransaction
+      tags:
+        - Fund Investment
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+            example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                txKey:
+                  type: string
+                  description: 이미 전송된 Transaction의 고유키
+                  example: 0esc8lk
+                signed_txdata:
+                  type: string
+                  description: Sing한 Transaction
+                  example: 9asd8pfs9d8f9sa8df9w8efoikwshfksahdfasiodfhu
+      responses:
+        200:
+          # Todo: 작업중
+          description: "OK"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: investment id
+                    example: 1
+                  amount:
+                    type: number
+                    description: 투자금액
+                  annualYieldRate:
+                    type: number
+                    description: 연간 수익률
+                  annualProfit:
+                    type: integer
+                    description: 연간 수익
+                  ownershipPercentage:
+                    type: number
+                    description: 전체 금액 대비 구매 지분, Equity 에 적용
+                  expectedProfit:
+                    type: number
+                    description: Debt 에 적용
+                  loanTenure:
+                    type: integer
+                    description: 상환 기간, Debt 에 적용
+                  assetId:
+                    type: integer
+                    description: asset table id
+                  currencyCode:
+                    $ref: "#/components/schemas/CurrencyCode"
+                  fundStatus:
+                    type: string
+                    description: 투자 진행 및 결과 상태
+                    enum:
+                      - Fundraising
+                      - Refunded
+                      - TokenIssued
+                      - Failed
+                  assetName:
+                    type: string
+                    description: 자산 이름
+                  assetType:
+                    type: string
+                    description: 자산 종류
+                    enum:
+                      - JUNIOR_DEBT
+                      - SENIOR_DEBT
+                      - EQUITY
+                  assetSymbol:
+                    type: string
+                    description: asset symbol
+                  createdAt:
+                    type: string
+                    example: "2019-08-26T06:08:14.000Z"
+
+        404:
+          description: "NO_TXKEY: Transaction을 찾지 못함."
   /fund/wallets/me:
     get:
       tags:
