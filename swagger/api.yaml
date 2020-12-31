@@ -1705,12 +1705,8 @@ components:
         videos:
           type: array
           items:
-            type: object
-            properties:
-              fileLink:
-                type: "string"
-              fileName:
-                type: "string"
+            type: "string"
+            example: https://www.youtube.com/watch?v=wiXok3NtAMk
 
         issuer:
           type: object
