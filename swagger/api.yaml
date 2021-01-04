@@ -1444,25 +1444,149 @@ paths:
                     example: OK
       security:
         - cookieAuth: []
-  # /fund/assets/me:
-  #   get:
-  #     tags:
-  #       - Fund Assets
-  #     summary: My assets overview & list
-  #     operationId: "getFundAssetsMe"
-  #     parameters:
-  #       - in: query
-  #         name: currencyCode
-  #         description: Multi Currency 통화코드 (GBP)
-  #         schema:
-  #           type: string
-  #           example: GBP
-  #       - in: query
-  #         name: status
-  #         description: default값은 OVERVIEW(status 값이 없는 경우), OPEN CLOSED를 사용
-  #         schema:
-  #           type: string
-  #           enum: [ALL, OWNED, FUNDRAISING]
+  /fund/assets/me:
+    get:
+      tags:
+        - Fund Assets
+      summary: 자신의 Currency별 투자 List
+      description: 자신의 Currency 별로 Balance와 총 투자금액을 보여준다.
+      operationId: getFundAssetsMe
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Wallet"
+        404:
+          description: |
+            - NO_DATA, Not find waiting with userId
+            - NO_USER, User not found with {email}
+      security:
+        - cookieAuth: []
+  /fund/assets/me/{currency}:
+    get:
+      tags:
+        - Fund Assets
+      summary: My assets overview & list
+      operationId: getFundAssetsMeCurrency
+      parameters:
+        - in: path
+          name: currency
+          required: true
+          description: Multi Currency 통화코드
+          schema:
+            type: string
+            example: GBP
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: object
+                    properties:
+                      investAmount:
+                        type: integer
+                        description: 투자금액
+                        example: 220000
+                      earnedAmount:
+                        type: integer
+                        description: 지급받은 금액
+                        example: 1000
+                      netAnnualYield:
+                        type: number
+                        description: 총 수익율 %
+                        example: 5.5
+                      currencyCode:
+                        $ref: "#/components/schemas/CurrencyCode"
+                  assetList:
+                    type: array
+                    description: 나의 투자내역
+                    items:
+                      $ref: "#/components/schemas/MyAsset"
+                  dividendList:
+                    type: array
+                    description: 분기별 지급받은 금액 목록 (오늘을 기준으로 1년 - 4쿼터)
+                    items:
+                      type: object
+                      properties:
+                        amount:
+                          type: integer
+                          description: 분기당 받은 금액
+                          example: 3500
+                        quarter:
+                          type: number
+                          description: 분기
+                          example: 1
+                        year:
+                          type: number
+                          description: 년도
+                          example: 2020
+                        currencyCode:
+                          $ref: "#/components/schemas/CurrencyCode"
+      security:
+        - cookieAuth: []
+  /fund/assets/orders:
+    get:
+      tags:
+        - Fund Assets
+      summary: My assets overview & list
+      operationId: "getFundAssetsOrders"
+      parameters:
+        - in: query
+          name: currencyCode
+          description: 'Multi Currency 통화코드 (Default: GBP)'
+          schema:
+            type: string
+            example: GBP
+        - in: query
+          name: status
+          description: default값은 ALL(status 값이 없는 경우), OPEN CLOSED를 사용
+          schema:
+            type: string
+            enum: [ALL, OPEN, CLOSED]
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    assetName:
+                      type: string
+                      description: Asset 이름
+                      example: Sharable Asset Holdings 50-4
+                    investAmount:
+                      type: integer
+                      description: 투자금액
+                      example: 220000
+                    allocatedAmount:
+                      type: integer
+                      description: 할당 받은 투자 금액
+                      example: 110000
+                    netAnnualYield:
+                      type: number
+                      description: 총 수익율 %
+                      example: 5.5
+                    currencyCode:
+                      $ref: "#/components/schemas/CurrencyCode"
+                    assetStatus:
+                      $ref: "#/components/schemas/FundraisingStatus"
+                      example: Subscribed
+                    createdAt:
+                      type: string
+                      example: "2019-08-26T06:08:14.000Z"
+      security:
+        - cookieAuth: []
 
 components:
   securitySchemes:
@@ -1747,13 +1871,20 @@ components:
     FundraisingStatus:
       type: string
       enum:
-        - LISTED
-        - STARTING
-        - RUNNING
-        - CLOSING
+        - OPEN
+        - APPROVING_CREATION
+        - CREATING
+        - CREATED
+        - SUBSCRIBED
         - CLOSED
-        - EXECUTING
-        - SUCCEEDED
+        - APPROVING_ALLOCATING
+        - READY_TO_ISSUE
+        - REFUNDING
+        - ISSUING
+        - DISTRIBUTING
+        - DISTRIBUTED
+        - MATURED
+        - EXPIRED
         - FAILED
     AssetStatusForUser:
       type: string
@@ -1763,7 +1894,8 @@ components:
         - Fundraising
         - Processing
         - Active
-        - Refunded
+        - Matured
+        - Failed
     AssetType:
       type: string
       description: 자산 종류
@@ -1931,3 +2063,31 @@ components:
             callPutDetail:
               type: string
               example: 30 June 2021
+    MyAsset:
+      type: "object"
+      properties:
+        myInvestAmount:
+          type: integer
+          description: 해당 자산에 투자한 금액
+          example: 3000
+        assetId:
+          type: number
+          description: 자산 id
+          example: 1
+        assetName:
+          type: string
+          description: 자산 이름
+          example: Shareable Asset Holdings
+        assetStatus:
+          $ref: '#/components/schemas/FundraisingStatus'
+        assetStatusForUser:
+          $ref: '#/components/schemas/AssetStatusForUser'
+        earnedAmount:
+          type: integer
+          description: 지급 받은 금액
+        netAnnualYield:
+          type: number
+          description: 연 수익율 (annualYieldRate에서 이름 변경)
+          example: 5.5
+        currencyCode:
+          $ref: "#/components/schemas/CurrencyCode"
