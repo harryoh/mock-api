@@ -1688,7 +1688,7 @@ components:
           type: number
           example: 400000
         progress:
-          type: integer
+          type: number
           description: '%'
           example: 22
         numberOfInvestors:
@@ -1698,20 +1698,26 @@ components:
           items:
             type: object
             properties:
+              id:
+                type: integer
+                example: 1
               fileLink:
-                type: "string"
+                type: string
               fileName:
-                type: "string"
+                type: string
         videos:
           type: array
           items:
             type: object
             properties:
+              id:
+                type: integer
+                example: 1
               fileLink:
-                type: "string"
+                type: string
                 example: https://www.youtube.com/watch?v=wiXok3NtAMk
               fileName:
-                type: "string"
+                type: string
         issuer:
           type: object
           properties:
@@ -1791,3 +1797,26 @@ components:
             ranking:
               type: integer
               example: 10
+        coupon:
+          type: object
+          properties:
+            couponRate:
+              type: number
+              description: '%'
+              example: 5.5
+            couponPayment:
+              type: string
+              example: selectbox todo
+            couponType:
+              type: string
+              example: selectbox todo
+            couponFrequency:
+              type: string
+              example: selectbox todo
+            firstCouponDate:
+              type: string
+              description: 1st Coupon Date
+              example: 30 June 2021
+            callPutDetail:
+              type: string
+              example: 30 June 2021
