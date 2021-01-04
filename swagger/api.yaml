@@ -1093,6 +1093,12 @@ paths:
           description: 'Multi Currency 통화코드 (default: GBP)'
           schema:
             $ref: "#/components/schemas/CurrencyCode"
+        - in: query
+          name: status
+          description: default값은 ALL(status 값이 없는 경우), OPEN CLOSED를 사용
+          schema:
+            type: string
+            enum: [ALL, OPEN, CLOSED]
       responses:
         200:
           description: successful operation
@@ -1352,6 +1358,111 @@ paths:
                       $ref: "#/components/schemas/AccountTx"
       security:
         - cookieAuth: []
+  /fund/feeds:
+    get:
+      summary: feed 목록 조회
+      description: feed 목록 조회
+      tags:
+        - Fund Feeds
+      parameters:
+        - in: query
+          name: tags
+          description: 입력받은 tag로 검색 (여러tag를 입력하면 모두 해당되는 feed만 검색) ex) ['tag1', 'tag2']
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      description: feed id
+                      example: 5
+                    media:
+                      type: string
+                      description: 해당 feed가 등록된곳
+                      example: SA Insights
+                    subject:
+                      type: string
+                      description: 제목
+                      example: Top 5 Reasons to Invest in Shareable Asset
+                    newsIssueDate:
+                      type: string
+                      description: 해당 feed 개시일
+                      example: 2020-09-04T00:00:00.000Z
+                    url:
+                      type: string
+                      description: 해당 feed 원문 링크
+                      example: https:\/\/www.shareableasset.com\/insights\/top-5-reasons-to-invest-in-real-estate-on-shareable-asset-5
+                    feedImage:
+                      type: string
+                      description: feed thumbnail 이미지
+                      example: https:\/\/stg.shareableasset.com\/uploadImage\/YyKUBnVdQe1599216896221.png
+                    tags:
+                      type: array
+                      items:
+                        type: string
+                        example: investment
+                    viewCnt:
+                      type: integer
+                      example: 4
+                    targetId:
+                      type: string
+                      example: FEED3
+  /feeds/{feedId}/count:
+    put:
+      summary: feed 조회수 증가
+      description: feed 조회수 증가, 조회한 유저 로그 추가
+      tags:
+        - Fund Feeds
+      parameters:
+        - in: path
+          name: feedId
+          required: true
+          description: feed id
+          schema:
+            type: integer
+            example: 4
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+      security:
+        - cookieAuth: []
+  # /fund/assets/me:
+  #   get:
+  #     tags:
+  #       - Fund Assets
+  #     summary: My assets overview & list
+  #     operationId: "getFundAssetsMe"
+  #     parameters:
+  #       - in: query
+  #         name: currencyCode
+  #         description: Multi Currency 통화코드 (GBP)
+  #         schema:
+  #           type: string
+  #           example: GBP
+  #       - in: query
+  #         name: status
+  #         description: default값은 OVERVIEW(status 값이 없는 경우), OPEN CLOSED를 사용
+  #         schema:
+  #           type: string
+  #           enum: [ALL, OWNED, FUNDRAISING]
 
 components:
   securitySchemes:
