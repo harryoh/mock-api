@@ -1711,7 +1711,6 @@ components:
                 type: "string"
               fileName:
                 type: "string"
-
         issuer:
           type: object
           properties:
@@ -1753,7 +1752,7 @@ components:
             domesticIdentifier:
               type: string
               example: ABCD12355
-            class:
+            classCode:
               type: string
               enum:
                 - A-1
