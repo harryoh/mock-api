@@ -2098,6 +2098,9 @@ components:
             id:
               type: number
               example: 1
+            bondIdentifier:
+              type: string
+              example: SA-001
             ISIN:
               type: string
               example: ABCD12345
