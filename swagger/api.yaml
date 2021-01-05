@@ -2270,6 +2270,18 @@ components:
         assetStatus:
           $ref: "#/components/schemas/FundraisingStatus"
           example: Subscribed
+        statusHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              status:
+                type: string
+                example: Subscribed
+              changedAt:
+                type: string
+                example: 11:59 pm 31 Dec
+
         createdAt:
           type: string
-          example: "2019-08-26T06:08:14.000Z"
+          example: 16:04 PM, Ocotober 13
