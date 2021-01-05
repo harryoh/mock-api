@@ -1180,6 +1180,48 @@ paths:
                 $ref: "#/components/schemas/FundraisingView"
       security:
         - cookieAuth: []
+  /fund/fundraisings/myBalanceAndMinMaxInvest/{assetId}:
+    get:
+      tags:
+      - Fundraising
+      summary: "get users balance and fundraising min max investment amount"
+      description: "사용자의 현재 GBP잔고(balance)와 투자 가능한 min/max 투자금액 조회."
+      operationId: "getFundFundraisingMyBalanceAndMinMaxInvestAssetId"
+      parameters:
+        - in: path
+          name: assetId
+          required: true
+          schema:
+            type: string
+          description: Asset ID
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  minInvestment:
+                    type: integer
+                    description: minimum invesment amount
+                    example: 10
+                  maxInvestment:
+                    type: integer
+                    description: maximum invesment amount
+                    example: 10000
+                  currencyCode:
+                    $ref: "#/components/schemas/CurrencyCode"
+                  balance:
+                    type: integer
+                    description: 유저의 GBP잔고
+                    example: 5000
+                  reward:
+                    type: integer
+                    description: 현재 reward 잔액 (GBP기준)
+                    example: 1000
+      security:
+        - cookieAuth: []
   /fund/investments:
     get:
       tags:
