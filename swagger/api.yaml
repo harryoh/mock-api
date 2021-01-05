@@ -1911,6 +1911,10 @@ components:
           type: integer
           description: 거래 발생 userId
           example: 1
+        currencyCode:
+          type: string
+          description: 통화 코드
+          example: GBP
         pecuniaryType:
           type: string
           description: 돈의 흐름 관점에서의 tx 형태
