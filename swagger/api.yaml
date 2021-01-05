@@ -617,6 +617,7 @@ paths:
       operationId: getSignupMemberAuthSuitability
       tags:
         - Auth Signup
+        - Auth Suitability
       parameters:
         - in: query
           name: language
@@ -643,6 +644,7 @@ paths:
       operationId: postAuthSignupMemberSuitabilityAnswer
       tags:
         - Auth Signup
+        - Auth Suitability
       requestBody:
         content:
           application/json:
@@ -681,6 +683,7 @@ paths:
       operationId: postAuthSignupMember/SuitabilityFinish
       tags:
         - Auth Signup
+        - Auth Suitability
       requestBody:
         content:
           application/json:
@@ -690,6 +693,49 @@ paths:
                   type: string
                   enum: ['AGGRESSIVE', 'BALANCED', 'CONSERVATIVE']
                   example: BALANCED
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+      security:
+        - cookieAuth: []
+  /auth/member/suitability/investProfile:
+    get:
+      description: suitability investProfile 조회
+      tags:
+        - Auth Suitability
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  investProfile:
+                    type: string
+                    enum: ['AGGRESSIVE', 'BALANCED', 'CONSERVATIVE']
+      security:
+        - cookieAuth: []
+    put:
+      description: (member) investorProfile 변경
+      tags:
+        - Auth Suitability
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                investProfile:
+                  type: string
+                  enum: ['AGGRESSIVE', 'BALANCED', 'CONSERVATIVE']
       responses:
         200:
           description: Success
@@ -1122,7 +1168,7 @@ paths:
           name: id
           required: true
           schema:
-            type: number
+            type: integer
           description: 조회하려는 assetId
       responses:
         200:
@@ -1298,6 +1344,32 @@ paths:
 
         404:
           description: "NO_TXKEY: Transaction을 찾지 못함."
+  /fund/investments/countForUser:
+    get:
+      tags:
+        - Fund Investment
+      summary: "Get investment count for user"
+      description: "해당 자산에 유저가 투자한 횟수를 조회"
+      operationId: "getFundInvestmentsCountForUser"
+      parameters:
+        - in: query
+          name: fundraisingId
+          schema:
+            type: string
+          description: 해당 fundraising의 id
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  investCount:
+                    type: integer
+                    description: 투자횟수
+      security:
+        - cookieAuth: []
   /fund/wallets/me:
     get:
       tags:
@@ -1320,7 +1392,6 @@ paths:
             - NO_USER, User not found with {email}
       security:
         - cookieAuth: []
-
   /fund/wallet/me/{currency}:
     get:
       tags:
@@ -1356,92 +1427,6 @@ paths:
                     description: 거래내역, group ordering (Waiting -> Processing -> Complete)
                     items:
                       $ref: "#/components/schemas/AccountTx"
-      security:
-        - cookieAuth: []
-  /fund/feeds:
-    get:
-      summary: feed 목록 조회
-      description: feed 목록 조회
-      tags:
-        - Fund Feeds
-      parameters:
-        - in: query
-          name: tags
-          description: 입력받은 tag로 검색 (여러tag를 입력하면 모두 해당되는 feed만 검색) ex) ['tag1', 'tag2']
-          schema:
-            type: array
-            items:
-              type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    id:
-                      type: number
-                      description: feed id
-                      example: 5
-                    media:
-                      type: string
-                      description: 해당 feed가 등록된곳
-                      example: SA Insights
-                    subject:
-                      type: string
-                      description: 제목
-                      example: Top 5 Reasons to Invest in Shareable Asset
-                    newsIssueDate:
-                      type: string
-                      description: 해당 feed 개시일
-                      example: 2020-09-04T00:00:00.000Z
-                    url:
-                      type: string
-                      description: 해당 feed 원문 링크
-                      example: https:\/\/www.shareableasset.com\/insights\/top-5-reasons-to-invest-in-real-estate-on-shareable-asset-5
-                    feedImage:
-                      type: string
-                      description: feed thumbnail 이미지
-                      example: https:\/\/stg.shareableasset.com\/uploadImage\/YyKUBnVdQe1599216896221.png
-                    tags:
-                      type: array
-                      items:
-                        type: string
-                        example: investment
-                    viewCnt:
-                      type: integer
-                      example: 4
-                    targetId:
-                      type: string
-                      example: FEED3
-  /feeds/{feedId}/count:
-    put:
-      summary: feed 조회수 증가
-      description: feed 조회수 증가, 조회한 유저 로그 추가
-      tags:
-        - Fund Feeds
-      parameters:
-        - in: path
-          name: feedId
-          required: true
-          description: feed id
-          schema:
-            type: integer
-            example: 4
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-                    example: OK
       security:
         - cookieAuth: []
   /fund/assets/me:
@@ -1559,35 +1544,121 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    assetName:
-                      type: string
-                      description: Asset 이름
-                      example: Sharable Asset Holdings 50-4
-                    investAmount:
-                      type: integer
-                      description: 투자금액
-                      example: 220000
-                    allocatedAmount:
-                      type: integer
-                      description: 할당 받은 투자 금액
-                      example: 110000
-                    netAnnualYield:
-                      type: number
-                      description: 총 수익율 %
-                      example: 5.5
-                    currencyCode:
-                      $ref: "#/components/schemas/CurrencyCode"
-                    assetStatus:
-                      $ref: "#/components/schemas/FundraisingStatus"
-                      example: Subscribed
-                    createdAt:
-                      type: string
-                      example: "2019-08-26T06:08:14.000Z"
+                  $ref: "#/components/schemas/MyOrder"
       security:
         - cookieAuth: []
-
+  /fund/assets/orders/{id}:
+    get:
+      tags:
+        - Fund Assets
+      summary: My Order Detail
+      operationId: "getFundAssetsOrdersId"
+      parameters:
+        - in: query
+          name: currencyCode
+          description: 'Multi Currency 통화코드 (Default: GBP)'
+          schema:
+            type: string
+            example: GBP
+        - in: path
+          name: id
+          required: true
+          description: 투자중인 항목의 세부항목
+          schema:
+            type: integer
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyOrder"
+  /fund/feeds:
+    get:
+      summary: feed 목록 조회
+      description: feed 목록 조회
+      tags:
+        - Fund Feeds
+      parameters:
+        - in: query
+          name: tags
+          description: 입력받은 tag로 검색 (여러tag를 입력하면 모두 해당되는 feed만 검색) ex) ['tag1', 'tag2']
+          schema:
+            type: array
+            items:
+              type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: number
+                      description: feed id
+                      example: 5
+                    media:
+                      type: string
+                      description: 해당 feed가 등록된곳
+                      example: SA Insights
+                    subject:
+                      type: string
+                      description: 제목
+                      example: Top 5 Reasons to Invest in Shareable Asset
+                    newsIssueDate:
+                      type: string
+                      description: 해당 feed 개시일
+                      example: 2020-09-04T00:00:00.000Z
+                    url:
+                      type: string
+                      description: 해당 feed 원문 링크
+                      example: https:\/\/www.shareableasset.com\/insights\/top-5-reasons-to-invest-in-real-estate-on-shareable-asset-5
+                    feedImage:
+                      type: string
+                      description: feed thumbnail 이미지
+                      example: https:\/\/stg.shareableasset.com\/uploadImage\/YyKUBnVdQe1599216896221.png
+                    tags:
+                      type: array
+                      items:
+                        type: string
+                        example: investment
+                    viewCnt:
+                      type: integer
+                      example: 4
+                    targetId:
+                      type: string
+                      example: FEED3
+  /feeds/{feedId}/count:
+    put:
+      summary: feed 조회수 증가
+      description: feed 조회수 증가, 조회한 유저 로그 추가
+      tags:
+        - Fund Feeds
+      parameters:
+        - in: path
+          name: feedId
+          required: true
+          description: feed id
+          schema:
+            type: integer
+            example: 4
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+      security:
+        - cookieAuth: []
 components:
   securitySchemes:
     cookieAuth:
@@ -2091,3 +2162,38 @@ components:
           example: 5.5
         currencyCode:
           $ref: "#/components/schemas/CurrencyCode"
+    MyOrder:
+      type: "object"
+      properties:
+        id:
+          type: integer
+          description: Order ID
+          example: 1
+        assetName:
+          type: string
+          description: Asset 이름
+          example: Sharable Asset Holdings 50-4
+        investAmount:
+          type: number
+          description: 투자금액
+          example: 220000
+        allocatedAmount:
+          type: number
+          description: 할당 받은 투자 금액
+          example: 110000
+        allocatedAsset:
+          type: number
+          description: 할방 받은 Asset(Bond)
+          example: 11000
+        netAnnualYield:
+          type: number
+          description: 총 수익율 %
+          example: 5.5
+        currencyCode:
+          $ref: "#/components/schemas/CurrencyCode"
+        assetStatus:
+          $ref: "#/components/schemas/FundraisingStatus"
+          example: Subscribed
+        createdAt:
+          type: string
+          example: "2019-08-26T06:08:14.000Z"
