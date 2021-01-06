@@ -1156,7 +1156,7 @@ paths:
                   $ref: "#/components/schemas/FundraisingView"
       security:
         - cookieAuth: []
-  /fund/fundraisings/{id}:
+  /fund/fundraisings/{fundraisingId}:
     get:
       tags:
       - Fundraising
@@ -1165,7 +1165,7 @@ paths:
       operationId: getFundFundraisingId
       parameters:
         - in: path
-          name: id
+          name: fundraisingId
           required: true
           schema:
             type: integer
@@ -1324,7 +1324,7 @@ paths:
           description: "BLOCKCHAIN_ERROR: 블록체인 에러가 난 경우."
       security:
         - cookieAuth: []
-  /fund/investments/{id}:
+  /fund/investments/{investId}:
     get:
       tags:
         - Fund Investment
@@ -1338,7 +1338,7 @@ paths:
             type: string
             example: GBP
         - in: path
-          name: id
+          name: investId
           required: true
           description: 투자중인 항목의 세부항목
           schema:
@@ -1352,7 +1352,7 @@ paths:
                 $ref: "#/components/schemas/MyOrder"
       security:
         - cookieAuth: []
-  /fund/investments/{id}/cancel:
+  /fund/investments/{investId}/cancel:
     put:
       tags:
         - Fund Investment
@@ -1360,7 +1360,7 @@ paths:
       operationId: "putFundInvestmentsIdCancel"
       parameters:
         - in: path
-          name: id
+          name: investId
           required: true
           description: 투자중인 항목의 세부항목
           schema:
@@ -1378,7 +1378,7 @@ paths:
                     example: OK
       security:
         - cookieAuth: []
-  /fund/investments/{id}/transaction:
+  /fund/investments/{investId}/transaction:
     put:
       summary: Sign Transaction
       description: 서버로 부터 받은 transaction을 사인하여 전송한다.
@@ -1387,7 +1387,7 @@ paths:
         - Fund Investment
       parameters:
         - in: path
-          name: id
+          name: investId
           required: true
           schema:
             type: integer
@@ -1422,24 +1422,19 @@ paths:
                   amount:
                     type: number
                     description: 투자금액
+                    example: 1000
                   annualYieldRate:
                     type: number
                     description: 연간 수익률
+                    example: 5.5
                   annualProfit:
-                    type: integer
+                    type: number
                     description: 연간 수익
-                  ownershipPercentage:
-                    type: number
-                    description: 전체 금액 대비 구매 지분, Equity 에 적용
-                  expectedProfit:
-                    type: number
-                    description: Debt 에 적용
-                  loanTenure:
-                    type: integer
-                    description: 상환 기간, Debt 에 적용
+                    example: 55
                   assetId:
                     type: integer
                     description: asset table id
+                    example: 11
                   currencyCode:
                     $ref: "#/components/schemas/CurrencyCode"
                   fundStatus:
@@ -1463,6 +1458,7 @@ paths:
                   assetSymbol:
                     type: string
                     description: asset symbol
+                    example: TES
                   createdAt:
                     type: string
                     example: "2019-08-26T06:08:14.000Z"
