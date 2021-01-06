@@ -1284,6 +1284,7 @@ paths:
                   description: 투자할 fundrasing id
                   type: integer
                 amount:
+                  type: integer
                   description: 투자금액 (GBP)
       responses:
         200:
