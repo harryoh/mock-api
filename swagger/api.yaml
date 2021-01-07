@@ -132,44 +132,6 @@ paths:
   #---
   # Auth API
   #---
-  /auth/token/status:
-    get:
-      summary: jwtToken 확인
-      description: 로그인 후 jwtToken 유효 여부 확인
-      operationId: getAuthTokenStatus
-      tags:
-        - Auth
-      parameters:
-        - in: header
-          name: signUp-jwt
-          description: 임시회원 토큰
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  userStatus:
-                    $ref: '#/components/schemas/userStatus'
-                    example: NOT_MEMBER
-                  onboardingStatus:
-                    $ref: '#/components/schemas/onboardingStatus'
-                    example: ''
-                  authLevel:
-                    $ref: '#/components/schemas/AuthLevel'
-                    example: NEW
-        401:
-          description: |
-            - NO_JWT_TOKEN, No JWT token provided
-            - NO_USER_FOR_JWT, No user for the JWT token
-            - INVALID_JWT, No longer valid JWT token(Logged in another device)
-            - EXPIRED_JWT, jwt expired
-      security:
-        - bearerAuth: []
   /auth/session/status:
     get:
       summary: 로그인 여부 확인
@@ -267,6 +229,9 @@ paths:
                   type: string
                   description: 모바일 전화번호
                   example: '01012341234'
+                password:
+                  type: string
+                  example: mypassword
                 deviceModel:
                   type: string
                   example: Mi MIX 2S
@@ -353,41 +318,6 @@ paths:
                     example: OK
         400:
           description: INVALID_CODE, The code provided does not match the expected value
-  /auth/signup20/member/passcode:
-    put:
-      summary: 비밀번호.
-      description: 새로운 비밀번호를 생성한다.
-      operationId: putAuthMemberPasscode
-      tags:
-        - Auth Signup
-      parameters:
-        - in: header
-          name: signUp-jwt
-          description: 임시회원 토큰
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                password:
-                  type: string
-                  example: mypassword
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-                    example: OK
-      security:
-        - bearerAuth: []
   /auth/signup30/otp/email:
     post:
       tags:
