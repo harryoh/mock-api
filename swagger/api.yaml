@@ -360,7 +360,16 @@ paths:
         - Auth Signup
       summary: "신규"
       description: 모바일에서 바이오인증을 위한 메시지 중 challenge값 요청
-      operationId: getAuthSignupMemberBioChallenge
+      operationId: postAuthSignupMemberBioChallenge
+      parameters:
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+            enum: [registerPublicForOnboarding]
+            example: invest
+          description: 바이오 인증을 하기 위한 동작
       responses:
         200:
           description: successful operation
@@ -965,7 +974,7 @@ paths:
         - Auth Bio
       summary: 바이오 인증을 위한 challenge값 요청
       description: 모바일에서 바이오인증을 위한 메시지 중 challenge값 요청
-      operationId: getAuthMemberBioChallenge
+      operationId: postAuthMemberBioChallenge
       parameters:
         - in: path
           name: action
