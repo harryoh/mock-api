@@ -500,6 +500,64 @@ paths:
                     example: OK
       security:
         - cookieAuth: []
+  /auth/member/config:
+    get:
+      description: 유저 설정정보 조회
+      operationId: getAuthMemberConfig
+      tags:
+        - Users
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devicePlatform:
+                    type: string
+                    enum: [ANDROID, IOS]
+                  marketingAllowed:
+                    type: boolean
+                    description: 마케팅 동의 여부
+                  pushAllowed:
+                    type: boolean
+                    description: push 동의 여부
+      security:
+        - cookieAuth: []
+    put:
+      summary: 유저 설정정보 수정
+      description: 유저 설정정보 수정
+      operationId: putAuthMemberConfig
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                marketingAllowed:
+                  type: boolean
+                  description: 마케팅 동의 여부
+                  example: true
+                pushAllowed:
+                  type: boolean
+                  description: push 동의 여부
+                  example: true
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+      security:
+        - cookieAuth: []
   /auth/signup30/member/profile:
     post:
       summary: 회원 프로필 정보 저장
@@ -2303,3 +2361,9 @@ components:
                 type: string
                 description: tin number 없는 이유, ex) No TIN is required
           description: 세금관련 정보
+        marketingAllowed:
+          type: boolean
+          description: 마케팅 동의 여부
+        pushAllowed:
+          type: boolean
+          description: push 동의 여부
