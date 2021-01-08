@@ -432,6 +432,10 @@ paths:
                   type: string
                   description: 암호화된 개인키
                   example: MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIZmdW4rKOJFvgVtA5BJwJtrQBD0rpWjMKZ2b6tev\nke9MTgw8Lf7xodca8mca9blFj7lOKP5qhXm4WWQ+OZ41Pw==
+                publicKey:
+                  type: string
+                  description: 공개키
+                  example: f1A214A2FADD7Ca7d0B1558F402D3dE1ce014ECF
       responses:
         200:
           description: successful operation
