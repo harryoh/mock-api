@@ -896,7 +896,7 @@ paths:
             - EXCEED_RETRY 로그인 시도 횟수 5회 초과 입니다.
             - INVALID_PASSWORD 잘못된 비밀번호 입니다.
         500:
-          description: NO_URL_OR_METHOD 로그인 jwt fund에 반영 실패!
+          description: NO_URL_OR_METHOD 로그인 실패!
   /auth/member/bio/challenge/{action}:
     post:
       tags:
@@ -1021,7 +1021,7 @@ paths:
             - EXCEED_RETRY 로그인 시도 횟수 5회 초과 입니다.
             - INVALID_PASSWORD 잘못된 비밀번호 입니다.
         500:
-          description: NO_URL_OR_METHOD 로그인 jwt fund에 반영 실패!
+          description: NO_URL_OR_METHOD 로그인 실패!
   /auth/otp/mobile/verify:
     post:
       summary: otp 확인
@@ -1695,10 +1695,6 @@ components:
       type: apiKey
       in: cookie
       name: liberty.sid
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
   schemas:
     MobileVersion:
       type: object
