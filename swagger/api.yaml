@@ -2257,9 +2257,13 @@ components:
         dob:
           type: string
           description: "2010-01-01, 생년월일"
-        citizenship:
+        gender:
           type: string
-          description: "3자리 국가 코드(ISO 3166-1 alpha-3)"
+          description: "성별"
+          enum: ['Male', 'Female']
+        occupation:
+          type: string
+          description: "직업명"
         country:
           type: string
           description: "국가 명"
@@ -2274,13 +2278,13 @@ components:
         postalCode:
           type: string
           description: "우편번호"
-        sourceOfWealth:
-          enum: ['Savings', 'Inheritance', 'Lottery/windfall', 'Investment gains','Others']
+        sourceOfFunds:
+          enum: ['Salary', 'Loans', 'Rental Income', 'Business revenue', 'Dividends', 'Donations', 'Others']
           type: array
           items:
             type: string
-        sourceOfFunds:
-          enum: ['Salary', 'Loans', 'Rental Income', 'Business revenue', 'Dividends', 'Donations', 'Others']
+        sourceOfWealth:
+          enum: ['Savings', 'Inheritance', 'Lottery/windfall', 'Investment gains','Others']
           type: array
           items:
             type: string
@@ -2299,19 +2303,3 @@ components:
                 type: string
                 description: tin number 없는 이유, ex) No TIN is required
           description: 세금관련 정보
-        identityNumber?:
-          type: string
-          description: "여권번호"
-        aliasName?:
-          type: string
-          description: "별칭"
-        countryOfBirth?:
-          type: string
-          description: "태어난 나라, 3자리코드"
-        occupation:
-          type: string
-          description: "직업명"
-        gender?:
-          type: string
-          description: "성별"
-          enum: ['Male', 'Female']
