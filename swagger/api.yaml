@@ -149,13 +149,8 @@ paths:
                 properties:
                   userStatus:
                     $ref: '#/components/schemas/userStatus'
-                    example: ONBOARDING_MEMBER
-                  onboardingStatus:
-                    $ref: '#/components/schemas/onboardingStatus'
-                    example: SUITABILITY_DONE
-                  authLevel:
-                    $ref: '#/components/schemas/AuthLevel'
-                    example: PROFILE
+                  signupStep:
+                    $ref: '#/components/schemas/SignupStep'
         401:
           description: |
             - INVALID_SESSION, session expired.
@@ -199,8 +194,8 @@ paths:
                   userStatus:
                     $ref: '#/components/schemas/userStatus'
                     example: NOT_MEMBER
-                  onboardingStatus?:
-                    $ref: '#/components/schemas/onboardingStatus'
+                  signupStep?:
+                    $ref: '#/components/schemas/SignupStep'
                   isDeviceNotChanged:
                     type: boolean
                     description: device id가 일치 하지 않을때 false. (deviceId값을 보내지 않을때는 true값만 리턴한다.)
@@ -609,7 +604,7 @@ paths:
   /auth/signup80/member/suitability/finish:
     post:
       summary: suitability 완료
-      description: suitability 끝날때 호출 해줘야 하는 api, 호출하면 onboardingStatus가 SUITABILITY_DONE로 변경된다.
+      description: suitability 끝날때 호출 해줘야 하는 api, 호출하면 signupStep SUITABILITY_DONE로 변경된다.
       operationId: postAuthSignupMember/SuitabilityFinish
       tags:
         - Auth Signup
@@ -705,10 +700,7 @@ paths:
                 type: object
                 properties:
                   userStatus:
-                    type: string
-                    enum: [NOT_MEMBER, EPH_MEMBER, ONBOARDING_MEMBER,
-                          BANED_MEMBER, MEMBER, DELETED_MEMBER]
-                    example: ONBOARDING_MEMBER
+                    $ref: '#/components/schemas/userStatus'
         401:
           description: |
             - NO_USER, 없는 유저 입니다.
@@ -835,14 +827,9 @@ paths:
                     description: 모바일 전화번호
                     example: '01012341234'
                   userStatus:
-                    type: string
-                    enum: [NOT_MEMBER, TEMP_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
-                    example: MEMBER
-                  onboardingStatus:
-                    $ref: '#/components/schemas/onboardingStatus'
-                  authLevel:
-                    $ref: '#/components/schemas/AuthLevel'
-                    type: string
+                    $ref: '#/components/schemas/userStatus'
+                  signupStep:
+                    $ref: '#/components/schemas/SignupStep'
                   isMigrationAgree:
                     type: boolean
                     description: migration 동의 여부
@@ -965,14 +952,9 @@ paths:
                     description: 모바일 전화번호
                     example: '01012341234'
                   userStatus:
-                    type: string
-                    enum: [NOT_MEMBER, TEMP_MEMBER, BANED_MEMBER, MEMBER, DELETED_MEMBER]
-                    example: MEMBER
-                  onboardingStatus:
-                    $ref: '#/components/schemas/onboardingStatus'
-                  authLevel:
-                    $ref: '#/components/schemas/AuthLevel'
-                    type: string
+                    $ref: '#/components/schemas/userStatus'
+                  signupStep:
+                    $ref: '#/components/schemas/SignupStep'
                   isMigrationAgree:
                     type: boolean
                     description: migration 동의 여부
@@ -1694,26 +1676,27 @@ components:
       type: string
       enum: [AUS, CAN, CHE, CHN, EUR, GBR, HKG, JPN, NZL, NOR, SWE, SGP, USA]
       example: GBR
-    onboardingStatus:
+    SignupStep:
       type: string
-      enum: [INIT_MEMBER, MOBILE_OTP_VERIFIED, PASSWORD_SET, EMAIL_OTP_VERIFIED,
-            PK_SET, SUITABILITY_DONE, PROFILE_SUBMITTED, ID_SUBMITTED, KYC_READY,
+      enum: [MOBILE_OTP_VERIFIED, EMAIL_OTP_VERIFIED, SUITABILITY_DONE,
+            PK_SET, PROFILE_SUBMITTED, ID_SUBMITTED, KYC_READY,
             PENDING_KYCAML, OCR_FAILED, FACE_FAILED, EDD_REQUIRED, POA_REQUIRED,
             POA_FAILED, UNDER18, DUPLICATE_PASSPORT, REJECTED_KYCAML,
             WHITELISTING, RI_VERIFIED]
       description: 회원가입 진행 상태, userStatus가 NOT_MEMBER인 경우 값이 없을 수 있다.
                   (최초 회원가입시 이 값은 없다.)
+      example: PK_SET
     userStatus:
       type: string
-      enum: [NOT_MEMBER, EPH_MEMBER, ONBOARDING_MEMBER, BANED_MEMBER, MEMBER,
+      enum: [NOT_MEMBER, PRE_MEMBER, ONBOARDING_MEMBER, BANED_MEMBER, MEMBER,
             DELETED_MEMBER]
-      description: NOT_MEMBER - email등록 하지 않은 경우 / EPH_MEMBER - 가입시작하고 otp 완료 전
-                  / ONBOARDING_MEMBER - otp인증 후 부터 회원가입 완료시 까지
-    AuthLevel:
-      type: string
-      enum: [NEW, EMAIL, PASSWORD, OTP, SUITABILITY, PROFILE, ID_SUBMITTED,
-            PENDING_KYCAML, KYCAML, SIGN_UP, BANK_ACCOUNT, ADD_FUNDED, INVESTED]
-      description: 회원 활동 상태
+      example: MEMBER
+      description: |
+        NOT_MEMBER - 등록 하지 않은 경우
+        PRE_MEMBER - 가입은 되어 있으나 절차가 완료되지 않은 멤버(가입시작하고 Suitability를 완료 전)
+        ONBOARDING_MEMBER - Fundraising List는 볼 수 있으나 투자는 불가능한 멤버(KYCAML 완료 전)
+        MEMBER - KYCAML이 완료되고 투자가 가능한 멤버
+
     SuitabilityQuestions:
       type: array
       items:
