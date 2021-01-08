@@ -224,9 +224,9 @@ paths:
                   type: string
                   description: 모바일 전화번호
                   example: '01012341234'
-                password:
+                passcode:
                   type: string
-                  example: mypassword
+                  example: mypasscode
                 deviceModel:
                   type: string
                   example: Mi MIX 2S
@@ -264,7 +264,6 @@ paths:
                     example: '01012341234'
                   userStatus:
                     $ref: '#/components/schemas/userStatus'
-                    example: EPH_MEMBER
                   requestId:
                     type: string
                     description: otp 발송요청했을때 받은 인증 키값
@@ -301,124 +300,6 @@ paths:
             Set-Cookie:
               schema:
                 type: string
-                example: signup-jwt=xxxx.signup-jwt-asdfsa; Path=/; HttpOnly
-              description: 임시회원 토큰
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-                    example: OK
-        400:
-          description: INVALID_CODE, The code provided does not match the expected value
-  /auth/signup30/otp/email:
-    post:
-      tags:
-        - Auth Signup
-      summary: 이메일 OTP 인증요청. 신규가입
-      description: 로그인 없이 이메일로 인증번호 요청
-      operationId: postAuthSignupOtpEmail
-      parameters:
-        - in: header
-          name: signUp-jwt
-          description: 임시회원 토큰
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  description: 인증 받는 유저의 이메일
-                  example: test@test.com
-      responses:
-        200:
-          description: "successful operation"
-          content:
-            application/json:
-              schema:
-                properties:
-                  requestId:
-                    type: string
-                    description: otp 인증 키값
-                  remainTime:
-                    type: number
-                    description: verify 남은 시간(초)
-        400:
-          description:  이미 존재하는 이메일입니다.
-      security:
-        - bearerAuth: []
-  /auth/signup40/otp/email/verify:
-    post:
-      summary: otp 확인. 신규가입
-      description: 요청한 otp 확인
-      operationId: postAuthSignupOtpEmailVerify
-      tags:
-        - Auth Signup
-      parameters:
-        - in: header
-          name: signUp-jwt
-          description: 임시회원 토큰
-          schema:
-            type: string
-        - in: header
-          name: otpcode
-          description: 발급받은 otp 번호
-          schema:
-            type: string
-      responses:
-        200:
-          description: Success
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  result:
-                    type: string
-                    example: OK
-        400:
-          description: INVALID_CODE, The code provided does not match the expected value
-      security:
-        - bearerAuth: []
-  /auth/signup50/member/finish:
-    post:
-      summary: 회원가입완료
-      description: 암호화된 PrivateKey를 저장하고 세션을 생성한다.
-      operationId: postAuthSignupMemberFinish
-      tags:
-        - Auth Signup
-      parameters:
-        - in: header
-          name: signUp-jwt
-          description: 임시회원 토큰
-          schema:
-            type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                encryptedPK:
-                  type: string
-                  description: 암호화된 PrivateKey
-                  example: 238909as9d99823khafsd9f8asd9f8h23kjfhaws9d8f
-                marketingAllowed:
-                  type: boolean
-                  example: true
-      responses:
-        200:
-          description: Success
-          headers:
-            Set-Cookie:
-              schema:
-                type: string
                 example: liberty.sid=abcde12345; Path=/; HttpOnly
               description: 로그인 세션
           content:
@@ -429,9 +310,9 @@ paths:
                   result:
                     type: string
                     example: OK
-      security:
-        - bearerAuth: []
-  /auth/signup54-optional/member/bio/publicKey:
+        400:
+          description: INVALID_CODE, The code provided does not match the expected value
+  /auth/signup14-optional/member/bio/publicKey:
     post:
       tags:
         - Auth Signup
@@ -473,7 +354,7 @@ paths:
             - INVALID_INPUT, 'Different deviceId'
       security:
         - cookieAuth: []
-  /auth/signup54-optional/member/bio/challenge:
+  /auth/signup14-optional/member/bio/challenge:
     post:
       tags:
         - Auth Signup
@@ -498,7 +379,7 @@ paths:
             - NO_USER, User not found with {email}
       security:
         - cookieAuth: []
-  /auth/signup55-optional/member/bio/verify:
+  /auth/signup15-optional/member/bio/verify:
     post:
       tags:
         - Auth Signup
@@ -533,6 +414,177 @@ paths:
           description: |
             - NO_DATA, Not find waiting with userId
             - NO_USER, User not found with {email}
+      security:
+        - cookieAuth: []
+  /auth/signup20/member/encPrivateKey:
+    post:
+      tags:
+        - Auth Signup
+      summary: '사용자 지갑의 암호화된 개인키 저장'
+      operationId: postAuthSignupMemberEncPrivateKey
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                encPrivateKey:
+                  type: string
+                  description: 암호화된 개인키
+                  example: MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEIZmdW4rKOJFvgVtA5BJwJtrQBD0rpWjMKZ2b6tev\nke9MTgw8Lf7xodca8mca9blFj7lOKP5qhXm4WWQ+OZ41Pw==
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+      security:
+        - cookieAuth: []
+  /auth/signup25/occupation:
+    get:
+      summary:
+      description: 서버에 직업리스트 요청
+      tags:
+        - Auth Signup
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  occupationList:
+                    type: array
+                    items:
+                      type: string
+                    example:
+                      - 'boxer'
+                      - 'engineer'
+                      - 'singer'
+        500:
+          description: INVALID_CODE
+      security:
+        - cookieAuth: []
+  /auth/member/profile:
+    put:
+      summary: 회원 프로필 수정
+      description: 회원 프로필 정보 수정
+      operationId: putAuthMemberProfile
+      tags:
+        - Auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+      security:
+        - cookieAuth: []
+  /auth/signup30/member/profile:
+    post:
+      summary: 회원 프로필 정보 저장
+      description: 회원 프로필 정보 저장
+      operationId: postUsersSignupMemberProfile
+      tags:
+        - Auth Signup
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+        401:
+          description: NO_COUNTRY 입력한 국가는 없는 국가입니다.
+        403:
+          description: BLACKLIST_COUNTRY 입력하신 국가는 블랙리스트 국가 입니다.
+      security:
+        - cookieAuth: []
+  /auth/signup40/otp/email:
+    post:
+      tags:
+        - Auth Signup
+      summary: 이메일 OTP 인증요청. 신규가입
+      description: 로그인 없이 이메일로 인증번호 요청
+      operationId: postAuthSignupOtpEmail
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  description: 인증 받는 유저의 이메일
+                  example: test@test.com
+      responses:
+        200:
+          description: "successful operation"
+          content:
+            application/json:
+              schema:
+                properties:
+                  requestId:
+                    type: string
+                    description: otp 인증 키값
+                  remainTime:
+                    type: number
+                    description: verify 남은 시간(초)
+        400:
+          description:  이미 존재하는 이메일입니다.
+      security:
+        - cookieAuth: []
+  /auth/signup50/otp/email/verify:
+    post:
+      summary: otp 확인. 신규가입
+      description: 요청한 otp 확인
+      operationId: postAuthSignupOtpEmailVerify
+      tags:
+        - Auth Signup
+      parameters:
+        - in: header
+          name: otpcode
+          description: 발급받은 otp 번호
+          schema:
+            type: string
+      responses:
+        200:
+          description: Success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    example: OK
+        400:
+          description: INVALID_CODE, The code provided does not match the expected value
       security:
         - cookieAuth: []
   /auth/signup60/member/suitability:
@@ -1678,17 +1730,17 @@ components:
       example: GBR
     SignupStep:
       type: string
-      enum: [MOBILE_OTP_VERIFIED, EMAIL_OTP_VERIFIED, SUITABILITY_DONE,
-            PK_SET, PROFILE_SUBMITTED, ID_SUBMITTED, KYC_READY,
-            PENDING_KYCAML, OCR_FAILED, FACE_FAILED, EDD_REQUIRED, POA_REQUIRED,
-            POA_FAILED, UNDER18, DUPLICATE_PASSPORT, REJECTED_KYCAML,
-            WHITELISTING, RI_VERIFIED]
+      enum: [MOBILE_OTP_VERIFIED, BIO_REGISTERED, PK_SET, PERSONAL_INFO_SET,
+            EMAIL_OTP_VERIFIED, SUITABILITY_DONE, PROFILE_SUBMITTED,
+            ID_SUBMITTED, KYC_READY, PENDING_KYCAML, OCR_FAILED, FACE_FAILED,
+            EDD_REQUIRED, POA_REQUIRED, POA_FAILED, UNDER18, DUPLICATE_PASSPORT,
+            REJECTED_KYCAML, WHITELISTING, RI_VERIFIED]
       description: 회원가입 진행 상태, userStatus가 NOT_MEMBER인 경우 값이 없을 수 있다.
                   (최초 회원가입시 이 값은 없다.)
       example: PK_SET
     userStatus:
       type: string
-      enum: [NOT_MEMBER, PRE_MEMBER, ONBOARDING_MEMBER, BANED_MEMBER, MEMBER,
+      enum: [NOT_MEMBER, PRE_MEMBER, ONBOARDING_MEMBER, MEMBER, BANED_MEMBER,
             DELETED_MEMBER]
       example: MEMBER
       description: |
@@ -2195,3 +2247,71 @@ components:
         createdAt:
           type: string
           example: 16:04 PM, Ocotober 13
+    UserProfile:
+      type: object
+      properties:
+        firstName:
+          type: string
+        lastName:
+          type: string
+        dob:
+          type: string
+          description: "2010-01-01, 생년월일"
+        citizenship:
+          type: string
+          description: "3자리 국가 코드(ISO 3166-1 alpha-3)"
+        country:
+          type: string
+          description: "국가 명"
+        address:
+          type: string
+        subAddress?:
+          type: string
+        city:
+          type: string
+        state?:
+          type: string
+        postalCode:
+          type: string
+          description: "우편번호"
+        sourceOfWealth:
+          enum: ['Savings', 'Inheritance', 'Lottery/windfall', 'Investment gains','Others']
+          type: array
+          items:
+            type: string
+        sourceOfFunds:
+          enum: ['Salary', 'Loans', 'Rental Income', 'Business revenue', 'Dividends', 'Donations', 'Others']
+          type: array
+          items:
+            type: string
+        taxRelated:
+          type: array
+          items:
+            type: object
+            properties:
+              taxCountry:
+                type: string
+                description: 세금 내는 국가(3자리 국가코드)
+              tinNumber?:
+                type: string
+                description: tin number
+              noTinReason?:
+                type: string
+                description: tin number 없는 이유, ex) No TIN is required
+          description: 세금관련 정보
+        identityNumber?:
+          type: string
+          description: "여권번호"
+        aliasName?:
+          type: string
+          description: "별칭"
+        countryOfBirth?:
+          type: string
+          description: "태어난 나라, 3자리코드"
+        occupation:
+          type: string
+          description: "직업명"
+        gender?:
+          type: string
+          description: "성별"
+          enum: ['Male', 'Female']
