@@ -447,7 +447,7 @@ paths:
         - cookieAuth: []
   /auth/signup25/occupation:
     get:
-      summary:
+      summary: 서버에 직업리스트 요청
       description: 서버에 직업리스트 요청
       tags:
         - Auth Signup
