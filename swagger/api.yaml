@@ -388,14 +388,22 @@ paths:
             - NO_USER, User not found with {email}
       security:
         - cookieAuth: []
-  /auth/signup15-optional/member/bio/verify:
-    post:
+  /auth/signup15-optional/member/bio/verify/{action}:
+    get:
       tags:
         - Auth Signup
       summary: "신규"
       description: 바이오 인증요청
       operationId: postAuthSignupMemberBio
       parameters:
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+            enum: [registerPublicForOnboarding]
+            example: invest
+          description: 바이오 인증을 하기 위한 동작
         - in: header
           name: nonce
           description: 바이오sign시, 사용한 nonce
@@ -1121,14 +1129,22 @@ paths:
           description: INVALID_CODE, The code provided does not match the expected value
       security:
         - cookieAuth: []
-  /auth/member/bio/verify:
-    post:
+  /auth/member/bio/verify/{action}:
+    get:
       tags:
         - Auth Bio
       summary: 바이오 인증
       description: 바이오 인증요청
       operationId: postAuthMemberBioVerify
       parameters:
+        - in: path
+          name: action
+          required: true
+          schema:
+            type: string
+            enum: [registerPublicForOnboarding]
+            example: invest
+          description: 바이오 인증을 하기 위한 동작
         - in: header
           name: nonce
           description: 바이오sign시, 사용한 nonce
