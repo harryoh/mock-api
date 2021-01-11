@@ -389,7 +389,7 @@ paths:
       security:
         - cookieAuth: []
   /auth/signup15-optional/member/bio/verify/{action}:
-    get:
+    post:
       tags:
         - Auth Signup
       summary: "신규"
@@ -1130,7 +1130,7 @@ paths:
       security:
         - cookieAuth: []
   /auth/member/bio/verify/{action}:
-    get:
+    post:
       tags:
         - Auth Bio
       summary: 바이오 인증
@@ -1142,7 +1142,9 @@ paths:
           required: true
           schema:
             type: string
-            enum: [registerPublicForOnboarding]
+            enum: [invest, addFunds, withdraw, backUpWallet, qrOp, signin,
+                  changeBankAccount, deletedMember, usersMe, registerPublic,
+                  currencyExchange]
             example: invest
           description: 바이오 인증을 하기 위한 동작
         - in: header
