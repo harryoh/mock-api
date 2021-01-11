@@ -193,9 +193,10 @@ paths:
                 properties:
                   userStatus:
                     $ref: '#/components/schemas/userStatus'
-                    example: NOT_MEMBER
+                    example: MEMBER
                   signupStep?:
                     $ref: '#/components/schemas/SignupStep'
+                    example: SIGNUP_STEP_SUITABILITY_DONE
                   isDeviceNotChanged:
                     type: boolean
                     description: device id가 일치 하지 않을때 false. (deviceId값을 보내지 않을때는 true값만 리턴한다.)
