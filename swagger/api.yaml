@@ -1823,7 +1823,7 @@ components:
             REJECTED_KYCAML, WHITELISTING, RI_VERIFIED]
       description: 회원가입 진행 상태, userStatus가 NOT_MEMBER인 경우 값이 없을 수 있다.
                   (최초 회원가입시 이 값은 없다.)
-      example: PK_SET
+      example: SUITABILITY_DONE
     userStatus:
       type: string
       enum: [NOT_MEMBER, PRE_MEMBER, ONBOARDING_MEMBER, MEMBER, BANED_MEMBER,
