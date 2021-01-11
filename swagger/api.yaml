@@ -354,7 +354,7 @@ paths:
             - INVALID_INPUT, 'Different deviceId'
       security:
         - cookieAuth: []
-  /auth/signup14-optional/member/bio/challenge:
+  /auth/signup14-optional/member/bio/challenge/{action}:
     post:
       tags:
         - Auth Signup
