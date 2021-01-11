@@ -2346,14 +2346,14 @@ components:
           type: string
           description: "우편번호"
         sourceOfFunds:
-          enum: ['Salary', 'Loans', 'Rental Income', 'Business revenue', 'Dividends', 'Donations', 'Others']
           type: array
           items:
+            enum: ['Salary', 'Loans', 'Rental Income', 'Business revenue', 'Dividends', 'Donations', 'Others']
             type: string
         sourceOfWealth:
-          enum: ['Savings', 'Inheritance', 'Lottery/windfall', 'Investment gains','Others']
           type: array
           items:
+            enum: ['Savings', 'Inheritance', 'Lottery/windfall', 'Investment gains','Others']
             type: string
         taxRelated:
           type: array
