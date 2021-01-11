@@ -945,6 +945,12 @@ paths:
       responses:
         200:
           description: Success
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: liberty.sid=abcde12345; Path=/; HttpOnly
+              description: 로그인 세션
           content:
             application/json:
               schema:
