@@ -2039,7 +2039,7 @@ components:
             - Waiting
             - Processing
             - Complete
-          example: Complete
+          example: Waiting
         lastBalance:
           type: integer
           description: transaction 발생 시점의 balance. 단, processStatus 가 "Waiting" 인 경우에는 null.
