@@ -1593,6 +1593,8 @@ paths:
                     fee: 100
                     currencyCode: "GBP"
                     confirmCode?: 123123
+      security:
+        - cookieAuth: []
   /fund/wallets/me:
     get:
       tags:
