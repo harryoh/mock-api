@@ -4,7 +4,7 @@ Liberty Mock API를 Swagger 문서로 작성하면 Validation하고 Swagger UI�
 
 ## Architecture
 
-![](https://raw.githubusercontent.com/BlueWhaleFoundation/liberty-mock-api/master/images/Liberty%20Mock%20API%20Server%20Architecture.png?token=AAJXOBL4EAGYPOT2FLTINWK74QV6E)
+![](https://i.imgur.com/oEsFRSZ.png)
 
 ## Setup
 
