@@ -895,6 +895,8 @@ paths:
             - NoRequestFound, No request found	There are no matching verify requests.
         401:
           description: NO_USER 입력한 전화번호와 일치하는 유저가 없습니다.
+      security:
+        - cookieAuth: []
   /auth/signin/otp:
     post:
       summary: OTP를 이용한 로그인
@@ -1552,6 +1554,63 @@ paths:
                     description: 투자횟수
       security:
         - cookieAuth: []
+  /fund/wallets/tx/{txId}:
+    get:
+      tags:
+        - Fund Wallets
+      summary: transaction의 상세정보
+      description: transaction의 상세정보
+      operationId: getFundWalletsTxTxId
+      parameters:
+        - in: path
+          name: txId
+          required: true
+          schema:
+            type: integer
+          description: accounts/me 값의 id
+      responses:
+        200:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    description: 조회요청한 id값
+                    example: 1
+                  pecuniaryType:
+                    type: string
+                    enum: ['ADD_FUNDS', 'WITHDRAW', 'INVEST', 'REFUND', 'DIVIDEND']
+                    description: 거래종류
+                  sortedAt:
+                    type: string
+                    example: "2020-06-01T06:16:21.000Z"
+                  totalAmount:
+                    type: integer
+                    description: 유저계정의 입출금된 금액으로 출금은 음수, 입금은 양수로 표현됨.
+                  status:
+                    type: string
+                    enum: ['Waiting', 'Processing','Complete', 'Fail']
+                  ADD_FUNDS?:
+                    type: object
+                    $ref: '#/components/schemas/Requests'
+                  WITHDRAW?:
+                    type: object
+                    $ref: '#/components/schemas/Requests'
+                  # INVEST?:
+                  #   type: object
+                  #   $ref: '#/definitions/invest'
+                  # REFUND?:
+                  #   type: object
+                  #   $ref: '#/definitions/invest'
+                  # EXCHANGE?:
+                  #   type: object
+                  #   $ref: '#/definitions/exchange'
+                  # DIVIDEND?:
+                  #   type: object
+                  #   $ref: '#/definitions/dividend'
   /fund/wallets/me:
     get:
       tags:
@@ -1574,7 +1633,7 @@ paths:
             - NO_USER, User not found with {email}
       security:
         - cookieAuth: []
-  /fund/wallet/me/{currency}:
+  /fund/wallets/me/{currency}:
     get:
       tags:
         - Fund Wallets
@@ -2443,14 +2502,14 @@ components:
           description: "2010-01-01, 생년월일"
         gender:
           type: string
-          description: "성별"
+          description: 성별
           enum: ['Male', 'Female']
         occupation:
           type: string
-          description: "직업명"
+          description: 직업명
         country:
           type: string
-          description: "국가 명"
+          description: 국가 명
         address:
           type: string
         subAddress?:
@@ -2461,7 +2520,7 @@ components:
           type: string
         postalCode:
           type: string
-          description: "우편번호"
+          description: 우편번호
         sourceOfFunds:
           type: array
           items:
@@ -2493,3 +2552,47 @@ components:
         pushAllowed:
           type: boolean
           description: push 동의 여부
+    Requests:
+      type: object
+      properties:
+        txHash:
+          type: string
+          example: "0x482259c5b0cbd1a97df9ecaf705e4e07ac58f6e88bb27d4a88939f3b0b2d0bd5"
+        requestStatus:
+          type: string
+          enum: [WAITING_MONEY_TRANSFER, OPEN, CODE_SENT, REVIEWED, PROCESSING, READY, DISTRIBUTING, DONE, REJECTED]
+          example: OPEN
+        accountOwner:
+          type: string
+          description: 'ADD_FUNDS / WITHDRAW일때 응답, fiat money가 입금될 계좌명'
+          example: Hong
+        accountNumber:
+          type: string
+          description: 'ADD_FUNDS / WITHDRAW일때 응답, fiat money가 입금될 계좌번호'
+          example: 000-111-2345
+        bankName:
+          type: string
+          description: 'ADD_FUNDS / WITHDRAW일때 응답, fiat money가 입금될 은행'
+          example: SC Bank
+        bankAddress?:
+          type: string
+          description: 'ADD_FUNDS 일때 응답'
+          example: Seoul
+        swiftCode:
+          type: string
+          description: 'ADD_FUNDS / WITHDRAW일때 응답'
+          example: BW1234
+        amount:
+          type: integer
+          description: 입출금 요청 금액으로 양수로 표현
+          example: 1000
+        fee:
+          type: integer
+          description: 수수료, 양수로 표현
+          example: 100
+        currencyCode:
+          $ref: "#/components/schemas/CurrencyCode"
+        confirmCode?:
+          type: string
+          description: 'ADD_FUNDS 일때 응답'
+          example: 123123
