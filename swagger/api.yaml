@@ -1574,43 +1574,25 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    type: integer
-                    description: 조회요청한 id값
-                    example: 1
-                  pecuniaryType:
-                    type: string
-                    enum: ['ADD_FUNDS', 'WITHDRAW', 'INVEST', 'REFUND', 'DIVIDEND']
-                    description: 거래종류
-                  sortedAt:
-                    type: string
-                    example: "2020-06-01T06:16:21.000Z"
-                  totalAmount:
-                    type: integer
-                    description: 유저계정의 입출금된 금액으로 출금은 음수, 입금은 양수로 표현됨.
-                  status:
-                    type: string
-                    enum: ['Waiting', 'Processing','Complete', 'Fail']
-                  ADD_FUNDS?:
-                    type: object
-                    $ref: '#/components/schemas/Requests'
-                  WITHDRAW?:
-                    type: object
-                    $ref: '#/components/schemas/Requests'
-                  # INVEST?:
-                  #   type: object
-                  #   $ref: '#/definitions/invest'
-                  # REFUND?:
-                  #   type: object
-                  #   $ref: '#/definitions/invest'
-                  # EXCHANGE?:
-                  #   type: object
-                  #   $ref: '#/definitions/exchange'
-                  # DIVIDEND?:
-                  #   type: object
-                  #   $ref: '#/definitions/dividend'
+                $ref: '#/components/schemas/Txid'
+                example:
+                  id: 1
+                  pecuniaryType: ADD_FUNDS
+                  sortedAt: '2020-06-01T06:16:21.000Z'
+                  totalAmount: 0
+                  status: 'Waiting'
+                  ADD_FUNDS:
+                    txHash: 0x482259c5b0cbd1a97df9ecaf705e4e07ac58f6e88bb27d4a88939f3b0b2d0bd5
+                    requestStatus: "OPEN"
+                    accountOwner: "Hong"
+                    accountNumber: "000-111-2345"
+                    bankName: "SC Bank"
+                    bankAddress?: "Seoul"
+                    swiftCode: "BW1234"
+                    amount: 1000
+                    fee: 100
+                    currencyCode: "GBP"
+                    confirmCode?: 123123
   /fund/wallets/me:
     get:
       tags:
@@ -2596,3 +2578,100 @@ components:
           type: string
           description: 'ADD_FUNDS 일때 응답'
           example: 123123
+    Invest:
+      type: object
+      properties:
+        amount:
+          type: integer
+          description: 투자/환불금액으로 양수로 표현
+          example: 1000
+        currencyCode:
+          $ref: "#/components/schemas/CurrencyCode"
+        txHash:
+          type: string
+          example: "0x482259c5b0cbd1a97df9ecaf705e4e07ac58f6e88bb27d4a88939f3b0b2d0bd5"
+        assetName:
+          type: string
+          example: SCD
+        assetType:
+          type: string
+          enum: ['JUNIOR_DEBT', 'SENIOR_DEBT', 'EQUITY']
+        fundraisingStatus:
+          type: string
+          enum: ['Fundraising', 'Refunded', 'Token Issued']
+    Exchange:
+      type: object
+      properties:
+        txHash:
+          type: string
+          example: "0x482259c5b0cbd1a97df9ecaf705e4e07ac58f6e88bb27d4a88939f3b0b2d0bd5"
+        currencyCode:
+          $ref: "#/components/schemas/CurrencyCode"
+        fromCurrencyCode:
+          $ref: "#/components/schemas/CurrencyCode"
+        toCurrencyCode:
+          $ref: "#/components/schemas/CurrencyCode"
+        fromAmount:
+          type: integer
+          example: 100
+        toAmount:
+          type: integer
+          example: 100
+        exchangeRate:
+          type: number
+          example: 0.45
+        fee:
+          type: integer
+          example: 10
+    Dividend:
+      type: object
+      properties:
+        currencyCode:
+          $ref: "#/components/schemas/CurrencyCode"
+        amount:
+          type: integer
+          example: 100
+        description:
+          type: string
+          example: my dividend
+        assetName:
+          type: string
+          example: SCD
+    Txid:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: 조회요청한 id값
+          example: 1
+        pecuniaryType:
+          type: string
+          enum: ['ADD_FUNDS', 'WITHDRAW', 'INVEST', 'REFUND', 'DIVIDEND']
+          description: 거래종류
+        sortedAt:
+          type: string
+          example: "2020-06-01T06:16:21.000Z"
+        totalAmount:
+          type: integer
+          description: 유저계정의 입출금된 금액으로 출금은 음수, 입금은 양수로 표현됨.
+        status:
+          type: string
+          enum: ['Waiting', 'Processing','Complete', 'Fail']
+        ADD_FUNDS?:
+          type: object
+          $ref: '#/components/schemas/Requests'
+        WITHDRAW?:
+          type: object
+          $ref: '#/components/schemas/Requests'
+        INVEST?:
+          type: object
+          $ref: '#/components/schemas/Invest'
+        REFUND?:
+          type: object
+          $ref: '#/components/schemas/Invest'
+        EXCHANGE?:
+          type: object
+          $ref: '#/components/schemas/Exchange'
+        DIVIDEND?:
+          type: object
+          $ref: '#/components/schemas/Dividend'
